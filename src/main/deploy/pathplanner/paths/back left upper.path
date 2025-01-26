@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.1375605189007085,
+        "y": 7.113615285175063
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8032474622445847,
+        "y": 6.6377998217231005
+      },
+      "isLocked": false,
+      "linkedName": "上站"
+    },
+    {
+      "anchor": {
+        "x": 3.8720574552954194,
+        "y": 5.076842938611745
+      },
+      "prevControl": {
+        "x": 3.0927618259157486,
+        "y": 5.646082844369555
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "左上"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.3,
+    "maxAcceleration": 3.9,
+    "maxAngularVelocity": 530.4443,
+    "maxAngularAcceleration": 1038.0,
+    "nominalVoltage": 11.5,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -52.94836513515683
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,258 @@
+package frc.robot.subsystems;
+
+import static edu.wpi.first.units.Units.*;
+
+import java.util.function.Supplier;
+
+import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
+/**
+ * 扩展 Phoenix 6 SwerveDrivetrain 类并实现 Subsystem 接口的类，
+ * 使其可以在基于命令的项目中轻松使用。
+ */
+public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements Subsystem {
+    private static final double kSimLoopPeriod = 0.005; // 5毫秒
+    private volatile Notifier m_simNotifier = null;
+    private double m_lastSimTime;
+
+    /** 在机器人中心路径跟踪期间应用的转向请求 */
+    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+
+    /* 在SysId特性化过程中应用的转向请求 */
+    private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
+    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+
+    /* 用于特性化平移的SysId程序。这用于找到驱动电机的PID增益。 */
+    private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                    null, // 使用默认斜率（1 V/s）
+                    Volts.of(4), // 将动态步进电压降至4V以防止断电
+                    null, // 使用默认超时（10秒）
+                    // 使用SignalLogger类记录状态
+                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    output -> setControl(m_translationCharacterization.withVolts(output)),
+                    null,
+                    this));
+
+    /* 用于特性化转向的SysId程序。这用于找到转向电机的PID增益。 */
+    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                    null, // 使用默认斜率（1 V/s）
+                    Volts.of(7), // 使用7V的动态电压
+                    null, // 使用默认超时（10秒）
+                    // 使用SignalLogger类记录状态
+                    state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    volts -> setControl(m_steerCharacterization.withVolts(volts)),
+                    null,
+                    this));
+
+    /*
+     * 用于特性化旋转的SysId程序。
+     * 这用于找到FieldCentricFacingAngle HeadingController的PID增益。
+     * 有关将日志导入SysId的信息，请参见SwerveRequest.SysIdSwerveRotation的文档。
+     */
+    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                    /* 这是弧度/秒²，但SysId只支持"伏特/秒" */
+                    Volts.of(Math.PI / 6).per(Second),
+                    /* 这是弧度/秒，但SysId只支持"伏特" */
+                    Volts.of(Math.PI),
+                    null, // 使用默认超时（10秒）
+                    // 使用SignalLogger类记录状态
+                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    output -> {
+                        /* output实际上是弧度/秒，但SysId只支持"伏特" */
+                        setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                        /* 同时记录请求的输出用于SysId */
+                        SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+                    },
+                    null,
+                    this));
+
+    /* 要测试的SysId程序 */
+    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+
+    /**
+     * 使用指定的常量构造CTRE SwerveDrivetrain。
+     * 
+     * 这会构造底层硬件设备，因此用户不应自行构造设备。
+     * 如果他们需要这些设备，可以通过类中的getter方法访问它们。
+     *
+     * @param drivetrainConstants 整个驱动系统的常量
+     * @param modules             每个具体模块的常量
+     */
+    public Swerve(
+            SwerveDrivetrainConstants drivetrainConstants,
+            SwerveModuleConstants<?, ?, ?>... modules) {
+        super(TalonFX::new, TalonFX::new, CANcoder::new,
+                drivetrainConstants, modules);
+        configureAutoBuilder();
+    }
+
+    /**
+     * 使用指定的常量构造CTRE SwerveDrivetrain。
+     * 
+     * 这会构造底层硬件设备，因此用户不应自行构造设备。
+     * 如果他们需要这些设备，可以通过类中的getter方法访问它们。
+     *
+     * @param drivetrainConstants     整个驱动系统的常量
+     * @param odometryUpdateFrequency 里程计循环的运行频率。如果未指定或设置为0 Hz，
+     *                                在CAN FD上为250 Hz，在CAN 2.0上为100 Hz
+     * @param modules                 每个具体模块的常量
+     */
+    public Swerve(
+            SwerveDrivetrainConstants drivetrainConstants,
+            double odometryUpdateFrequency,
+            SwerveModuleConstants<?, ?, ?>... modules) {
+        super(TalonFX::new, TalonFX::new, CANcoder::new,
+                drivetrainConstants, odometryUpdateFrequency, modules);
+        configureAutoBuilder();
+    }
+
+    /**
+     * 使用指定的常量构造CTRE SwerveDrivetrain。
+     * 
+     * 这会构造底层硬件设备，因此用户不应自行构造设备。
+     * 如果他们需要这些设备，可以通过类中的getter方法访问它们。
+     *
+     * @param drivetrainConstants       整个驱动系统的常量
+     * @param odometryUpdateFrequency   里程计循环的运行频率。如果未指定或设置为0 Hz，
+     *                                  在CAN FD上为250 Hz，在CAN 2.0上为100 Hz
+     * @param odometryStandardDeviation 里程计计算的标准差，格式为[x, y, theta]ᵀ，
+     *                                  单位为米和弧度
+     * @param visionStandardDeviation   视觉计算的标准差，格式为[x, y, theta]ᵀ，
+     *                                  单位为米和弧度
+     * @param modules                   每个具体模块的常量
+     */
+    public Swerve(
+            SwerveDrivetrainConstants drivetrainConstants,
+            double odometryUpdateFrequency,
+            Matrix<N3, N1> odometryStandardDeviation,
+            Matrix<N3, N1> visionStandardDeviation,
+            SwerveModuleConstants<?, ?, ?>... modules) {
+        super(TalonFX::new, TalonFX::new, CANcoder::new,
+                drivetrainConstants, odometryUpdateFrequency,
+                odometryStandardDeviation, visionStandardDeviation,
+                modules);
+        configureAutoBuilder();
+    }
+
+    /**
+     * 返回一个将指定控制请求应用于此摆动驱动系统的命令。
+     *
+     * @param request 返回要应用的请求的函数
+     * @return 要运行的命令
+     */
+    public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
+        return run(() -> this.setControl(requestSupplier.get()));
+    }
+
+    /**
+     * 在给定方向上运行由{@link #m_sysIdRoutineToApply}指定的SysId准静态测试。
+     *
+     * @param direction SysId准静态测试的方向
+     * @return 要运行的命令
+     */
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineToApply.quasistatic(direction);
+    }
+
+    /**
+     * 在给定方向上运行由{@link #m_sysIdRoutineToApply}指定的SysId动态测试。
+     *
+     * @param direction SysId动态测试的方向
+     * @return 要运行的命令
+     */
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineToApply.dynamic(direction);
+    }
+
+    private void configureAutoBuilder() {
+        try {
+            var config = RobotConfig.fromGUISettings();
+            AutoBuilder.configure(
+                    () -> getState().Pose, // 当前机器人姿态的提供者
+                    this::resetPose, // 用于根据自动程序设置姿态的消费者
+                    () -> getState().Speeds, // 当前机器人速度的提供者
+                    // 用于驱动机器人的底盘速度和前馈的消费者
+                    (speeds, feedforwards) -> setControl(
+                            m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                    new PPHolonomicDriveController(
+                            // 平移的PID常量
+                            new PIDConstants(10, 0, 0),
+                            // 旋转的PID常量
+                            new PIDConstants(7, 0, 0)),
+                    config,
+                    // 假设路径需要根据红蓝方进行翻转，这通常是需要的
+                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                    this // 用于要求的子系统
+            );
+        } catch (Exception ex) {
+            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder",
+                    ex.getStackTrace());
+        }
+    }
+
+    /**
+     * 设置所有模块的空档模式
+     * 
+     * @param mode 要设置的空档模式
+     */
+    public void setNeutralMode(NeutralModeValue mode) {
+        for (var module : getModules()) {
+            module.getDriveMotor().setNeutralMode(mode);
+            module.getSteerMotor().setNeutralMode(mode);
+        }
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        if (m_simNotifier == null) {
+            m_lastSimTime = Utils.getCurrentTimeSeconds();
+
+            /* 以更快的速率运行仿真，使PID增益表现更合理 */
+            m_simNotifier = new Notifier(() -> {
+                final double currentTime = Utils.getCurrentTimeSeconds();
+                double deltaTime = currentTime - m_lastSimTime;
+                m_lastSimTime = currentTime;
+
+                /* 使用测量的时间差，从WPILib获取电池电压 */
+                updateSimState(deltaTime, RobotController.getBatteryVoltage());
+            });
+            m_simNotifier.startPeriodic(kSimLoopPeriod);
+        }
+    }
+}
