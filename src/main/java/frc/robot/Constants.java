@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.units.measure.*;
 
 public class Constants {
+
     // 由 Tuner X Swerve Project Generator 生成
     // https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
     public class SwerveConstants {
@@ -49,7 +50,7 @@ public class Constants {
 
         // 车轮开始打滑时的定子电流；
         // 这需要根据您的具体机器人进行调整
-        private static final Current kSlipCurrent = Amps.of(120.0);
+        private static final Current kSlipCurrent = Amps.of(70.0);
 
         // 驱动和转向电机以及方位编码器的初始配置；这些不能为空。
         // 某些配置将被覆盖；请查看 `with*InitialConfigs()` API 文档。
@@ -77,7 +78,7 @@ public class Constants {
 
         // 在 12V 输出电压下的理论最大速度（m/s）；
         // 这需要根据您的具体机器人进行调整
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.21);
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(3.0);
 
         // 方位每旋转 1 圈会导致驱动电机转动 kCoupleRatio 圈；
         // 这可能需要根据您的具体机器人进行调整
@@ -210,46 +211,140 @@ public class Constants {
         public static final double kGearRatio = 140.0; // 总减速比
         public static final double kMaxAngle = 0.25; // 最大角度（0.25转 = 90度）
 
+        // Through Bore Encoder配置
+        public static final double kEncoderOffset = 0.8649453425872388;
+
         // 驱动电机配置
         public static final TalonFXConfiguration driveConfigs = new TalonFXConfiguration()
+                .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast))
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withStatorCurrentLimit(40)
                         .withStatorCurrentLimitEnable(true));
 
+        // 位置电机PID增益
+        public static final Slot0Configs positionGains = new Slot0Configs()
+                .withKP(100) // 位置环增益
+                .withKI(0.0)
+                .withKD(0)
+                .withKS(0) // 静摩擦补偿
+                .withKV(0) // 速度前馈
+                .withKA(0) // 加速度前馈
+                .withGravityType(GravityTypeValue.Arm_Cosine)
+                .withKG(0.2998046875);
+
         // 位置电机配置
         public static final TalonFXConfiguration positionConfigs = new TalonFXConfiguration()
+                .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withStatorCurrentLimit(30)
                         .withStatorCurrentLimitEnable(true))
                 .withMotionMagic(new MotionMagicConfigs()
-                        .withMotionMagicCruiseVelocity(0.15)
-                        .withMotionMagicAcceleration(0.3))
-                .withSlot0(new Slot0Configs()
-                        .withKP(1.5)
-                        .withKI(0.0)
-                        .withKD(0.5)
-                        .withKS(0.25))
+                        .withMotionMagicExpo_kV(0.012)
+                        .withMotionMagicExpo_kA(0.8))
+                .withTorqueCurrent(new TorqueCurrentConfigs()
+                        .withPeakForwardTorqueCurrent(40) // 最大正向力矩电流
+                        .withPeakReverseTorqueCurrent(-40)) // 最大反向力矩电流
+                .withSlot0(positionGains)
                 .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
                         .withForwardSoftLimitEnable(true)
                         .withForwardSoftLimitThreshold(kMaxAngle)
                         .withReverseSoftLimitEnable(true)
-                        .withReverseSoftLimitThreshold(0.0))
+                        .withReverseSoftLimitThreshold(-1.1))
                 .withFeedback(new FeedbackConfigs()
                         .withSensorToMechanismRatio(kGearRatio));
 
-        // Through Bore Encoder配置
-        public static final double kEncoderMinDutyCycle = 1.0 / 4096.0;
-        public static final double kEncoderMaxDutyCycle = 4095.0 / 4096.0;
     }
 
     public class ElevatorConstants {
+        // 设备ID
         public static final int kElevatorDriverMotor1Id = 30; // 驱动电机1
         public static final int kElevatorDriverMotor2Id = 31; // 驱动电机2
+
+        // 机构参数
+        public static final double kGearRatio = 20.0; // 总减速比
+        public static final double kMaxHeight = 1.0; // 最大高度（转数）
+
+        // 电机配置
+        public static final TalonFXConfiguration motorConfigs = new TalonFXConfiguration()
+                .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
+                .withCurrentLimits(new CurrentLimitsConfigs()
+                        .withStatorCurrentLimit(60)
+                        .withStatorCurrentLimitEnable(true))
+                .withMotionMagic(new MotionMagicConfigs()
+                        .withMotionMagicExpo_kV(0.006)//
+                        .withMotionMagicExpo_kA(0.3))//
+                .withSlot0(new Slot0Configs()
+                        .withKP(50)// (6) // 位置环增益
+                        .withKI(0)// (0)
+                        .withKD(0.5)// (0)
+                        .withKS(0.3)// (0.12) // 静摩擦补偿
+                        .withKV(0.1)// (8) // 速度前馈
+                        .withKA(0)// (0.5) // 加速度前馈
+                        .withKG(0.1))// (0.18))
+                .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
+                        .withForwardSoftLimitEnable(false)
+                        .withForwardSoftLimitThreshold(kMaxHeight)
+                        .withReverseSoftLimitEnable(false)
+                        .withReverseSoftLimitThreshold(0.0))
+                .withFeedback(new FeedbackConfigs()
+                        .withSensorToMechanismRatio(kGearRatio));
     }
 
     public class MouthConstants {
-        public static final int kMouthDriverMotorId = 40; // 位置电机
-        public static final int kMouthPositionMotorId1 = 41; // 驱动电机
-        public static final int kMouthPositionMotorId2 = 42; // 驱动电机
+        // 设备ID
+        public static final int kMouthPositionMotorId = 40; // 位置电机
+        public static final int kMouthDriverMotorId = 41; // 位置电机
+        public static final int kEncoderChannel = 1; // Through Bore编码器通道
+
+        // 机构参数
+        public static final double kGearRatio = 20.0; // 总减速比
+        public static final double kMaxAngle = 0.27; // 最大角度（0.5转 = 180度）
+
+        // Through Bore Encoder配置
+        public static final double kEncoderOffset = 0.1861383518994285;
+
+        // 位置电机PID增益
+        public static final Slot0Configs positionGains = new Slot0Configs()
+                .withKP(100.0) // 位置环增益
+                .withKI(0.0)
+                .withKD(0.1)
+                .withKS(0.5); // 静摩擦补偿
+
+        // 位置电机配置
+        public static final TalonFXConfiguration positionConfigs = new TalonFXConfiguration()
+                .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
+                .withCurrentLimits(new CurrentLimitsConfigs()
+                        .withStatorCurrentLimit(30)
+                        .withStatorCurrentLimitEnable(true))
+                .withMotionMagic(new MotionMagicConfigs()
+                        .withMotionMagicExpo_kV(1.2)
+                        .withMotionMagicExpo_kA(2.4))
+                .withTorqueCurrent(new TorqueCurrentConfigs()
+                        .withPeakForwardTorqueCurrent(40) // 最大正向力矩电流
+                        .withPeakReverseTorqueCurrent(-40)) // 最大反向力矩电流
+                .withSlot0(positionGains)
+                .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
+                        .withForwardSoftLimitEnable(true)
+                        .withForwardSoftLimitThreshold(kMaxAngle)
+                        .withReverseSoftLimitEnable(true)
+                        .withReverseSoftLimitThreshold(-kMaxAngle))
+                .withFeedback(new FeedbackConfigs()
+                        .withSensorToMechanismRatio(kGearRatio));
+
+        // 驱动电机
+        public static final TalonFXConfiguration driveConfigs = new TalonFXConfiguration()
+                .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
+                .withCurrentLimits(new CurrentLimitsConfigs()
+                        .withStatorCurrentLimit(60)
+                        .withStatorCurrentLimitEnable(true))
+                .withSlot0(new Slot0Configs()
+                        .withKP(0.1) // 位置环增益
+                        .withKI(0.0)
+                        .withKD(0.001)
+                        .withKS(0.1796875)
+                        .withKV(0.11500000208616257))
+                .withMotionMagic(new MotionMagicConfigs()
+                        .withMotionMagicCruiseVelocity(100)
+                        .withMotionMagicAcceleration(1000));
     }
 }
