@@ -100,7 +100,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command toVertical() {
-        return runOnce(() -> setPosition(0.2));
+        return runOnce(() -> setPosition(0.23));
     }
 
     public Command toAlga(){

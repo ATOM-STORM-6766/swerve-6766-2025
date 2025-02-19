@@ -21,6 +21,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.vision.FieldTargets;
 
 /**
  * 扩展 Phoenix 6 SwerveDrivetrain 类并实现 Subsystem 接口的类，
@@ -39,11 +41,19 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
     private static final double kSimLoopPeriod = 0.005; // 5毫秒
     private volatile Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    public final FieldTargets targets;
+
+    /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
+    private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
+    /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
+    private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
+    /* Keep track if we've ever applied the operator perspective before or not */
+    private boolean m_hasAppliedOperatorPerspective = false;
 
     /** 在机器人中心路径跟踪期间应用的转向请求 */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity)
-            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+            .withSteerRequestType(SteerRequestType.Position);
 
     /* 在SysId特性化过程中应用的转向请求 */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -101,7 +111,7 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
                     this));
 
     /* 要测试的SysId程序 */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineRotation;
 
     /**
      * 使用指定的常量构造CTRE SwerveDrivetrain。
@@ -113,10 +123,12 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
      * @param modules             每个具体模块的常量
      */
     public Swerve(
+            FieldTargets targets,
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(TalonFX::new, TalonFX::new, CANcoder::new,
                 drivetrainConstants, modules);
+        this.targets = targets;
         configureAutoBuilder();
     }
 
@@ -132,11 +144,13 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
      * @param modules                 每个具体模块的常量
      */
     public Swerve(
+            FieldTargets targets,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(TalonFX::new, TalonFX::new, CANcoder::new,
                 drivetrainConstants, odometryUpdateFrequency, modules);
+        this.targets = targets;
         configureAutoBuilder();
     }
 
@@ -156,6 +170,7 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
      * @param modules                   每个具体模块的常量
      */
     public Swerve(
+            FieldTargets targets,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             Matrix<N3, N1> odometryStandardDeviation,
@@ -165,6 +180,7 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
                 drivetrainConstants, odometryUpdateFrequency,
                 odometryStandardDeviation, visionStandardDeviation,
                 modules);
+        this.targets = targets;
         configureAutoBuilder();
     }
 
@@ -212,9 +228,9 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
                                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
                     new PPHolonomicDriveController(
                             // 平移的PID常量
-                            new PIDConstants(10, 0, 0),
+                            new PIDConstants(5, 0, 0),
                             // 旋转的PID常量
-                            new PIDConstants(7, 0, 0)),
+                            new PIDConstants(3, 0, 0)),
                     config,
                     // 假设路径需要根据红蓝方进行翻转，这通常是需要的
                     () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
@@ -235,6 +251,28 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
         for (var module : getModules()) {
             module.getDriveMotor().setNeutralMode(mode);
             module.getSteerMotor().setNeutralMode(mode);
+        }
+    }
+
+    @Override
+    public void periodic() {
+        targets.update(getState().Pose);
+        /*
+         * Periodically try to apply the operator perspective.
+         * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+         * This allows us to correct the perspective in case the robot code restarts mid-match.
+         * Otherwise, only check and apply the operator perspective if the DS is disabled.
+         * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+         */
+        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+            DriverStation.getAlliance().ifPresent(allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red
+                        ? kRedAlliancePerspectiveRotation
+                        : kBlueAlliancePerspectiveRotation
+                );
+                m_hasAppliedOperatorPerspective = true;
+            });
         }
     }
 

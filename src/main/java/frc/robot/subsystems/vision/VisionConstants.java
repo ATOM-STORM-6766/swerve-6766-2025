@@ -28,8 +28,8 @@ public class VisionConstants {
 
     // 机器人到相机的变换
     // (Limelight不使用此配置，请在web界面中配置)
-    public static Transform3d robotToCamera0 = new Transform3d(0.281670, 0.125388, 1.000233,
-            new Rotation3d(0.0, 0, Math.PI));// -0.436332
+    public static Transform3d robotToCamera0 = new Transform3d(0.264213 ,  0.219250, 0.995825 ,
+            new Rotation3d(-0.174533, 0.0, 0));// -0.436332
     public static Transform3d robotToCamera1 = new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
 
     // 基本过滤阈值

@@ -6,17 +6,10 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Main",
+      "name": "x",
       "request": "launch",
-      "mainClass": "frc.robot.Main",
+      "mainClass": "frc.robot.x",
       "projectName": "swerve-6766-2025"
-    },
-    {
-      "type": "java",
-      "name": "Main",
-      "request": "launch",
-      "mainClass": "frc.robot.Main",
-      "projectName": "new"
     },
     {
       "type": "wpilib",

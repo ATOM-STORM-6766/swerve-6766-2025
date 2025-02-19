@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import static edu.wpi.first.units.Units.Rotation;
+
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -12,10 +14,26 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.MouthConstants;
+import frc.robot.subsystems.vision.FieldTargets;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class Mouth extends SubsystemBase {
+
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTable driveStateTable = inst.getTable("Vision");
+    private final StructPublisher<Translation2d> drivePose = driveStateTable
+            .getStructTopic("Mouth", Translation2d.struct)
+            .publish();
+
     // 硬件设备
     private final TalonFX m_positionMotor;
     private final TalonFX m_driveMotor;
@@ -29,6 +47,7 @@ public class Mouth extends SubsystemBase {
     public final Trigger m_limitSwitchTrigger = new Trigger(m_limitSwitch::get);
 
     // 状态变量
+    private FieldTargets target;
     private boolean m_isInitialized = false;
     private int m_stableReadingsCount = 0;
     private double m_lastEncoderReading = 0.0;
@@ -37,7 +56,8 @@ public class Mouth extends SubsystemBase {
     /**
      * 构造函数
      */
-    public Mouth() {
+    public Mouth(FieldTargets target) {
+        this.target = target;
         // 初始化电机
         m_driveMotor = new TalonFX(41);
         m_positionMotor = new TalonFX(MouthConstants.kMouthPositionMotorId);
@@ -129,14 +149,45 @@ public class Mouth extends SubsystemBase {
     public void setPosition(double position) {
         // 如果未初始化完成，拒绝控制请求
         if (!m_isInitialized) {
-            System.out.println("警告: 嘴部机构未完成初始化，拒绝位置控制请求");
+            System.out.println("Mouth not initialized");
             return;
         }
 
         // 限制在有效范围内
-        // m_targetPosition = Math.min(Math.max(position, 0.0),
-        // MouthConstants.kMaxAngle);
+        if (position > 0.25 || position < -0.25)
+            position = 0;
         m_positionMotor.setControl(m_positionRequest.withPosition(position));
+    }
+
+    private Rotation2d _Mtom(Rotation2d m) {
+        double a = 0.030;
+        double b = 0.150;
+        double c = 0.170;
+        double d = 0.083;
+
+        m = Rotation2d.fromDegrees(90).minus(m);
+
+        double R = Math.sqrt(a * a + d * d - 2 * d * b * m.getCos());
+
+        double theta = Math.asin(b * m.getSin() / R);
+        double alpha = Math.acos((R * R + a * a - c * c) / (2 * R * a));
+
+        return new Rotation2d(theta + alpha).minus(Rotation2d.fromDegrees(143.2819185155736));
+    }
+
+    public void setLeft(Pose2d curr) {
+        Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr);
+        drivePose.set(t.getTranslation());
+        double position = t.getTranslation().getAngle().getDegrees();
+        position = MouthConstants.Mtom.get(position);
+        setPosition(position);
+    }
+
+    public void setRight(Pose2d curr) {
+        double position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr)
+                .getTranslation()
+                .getAngle().getRadians();
+        setPosition(position);
     }
 
     /**
@@ -157,7 +208,7 @@ public class Mouth extends SubsystemBase {
             m_driveMotor.setControl(m_voltageOutRequest.withVelocity(-currentSpeed * m_brakeFactor));
             System.out.println(-currentSpeed * m_brakeFactor);
         })
-                .andThen(Commands.waitSeconds(0.27))
+                .andThen(Commands.waitSeconds(0.05))
                 .andThen(setSpeed(0)); // 最后设置为0
     }
 

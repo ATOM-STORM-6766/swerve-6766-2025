@@ -15,9 +15,12 @@ package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -31,104 +34,112 @@ import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 
 public class Vision extends SubsystemBase {
-  private final VisionConsumer consumer;
-  private final VisionIO[] io;
-  private final VisionIOInputs[] inputs;
-  private final Alert[] disconnectedAlerts;
+    private final VisionConsumer consumer;
+    private final VisionIO[] io;
+    private final VisionIOInputs[] inputs;
+    private final Alert[] disconnectedAlerts;
 
-  /* What to publish over networktables for telemetry */
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final FieldTargets target;
 
-  private final NetworkTable driveStateTable = inst.getTable("Vision");
-  private final StructPublisher<Pose2d> drivePose = driveStateTable.getStructTopic("Pose", Pose2d.struct)
-      .publish();
+    /* What to publish over networktables for telemetry */
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
-  public Vision(VisionConsumer consumer, VisionIO... io) {
-    this.consumer = consumer;
-    this.io = io;
+    private final NetworkTable driveStateTable = inst.getTable("Vision");
+    private final StructPublisher<Pose2d> drivePose = driveStateTable.getStructTopic("Pose", Pose2d.struct)
+            .publish();
+    private final StructPublisher<Pose3d> targetPose = driveStateTable.getStructTopic("targetReef", Pose3d.struct)
+            .publish();
 
-    // 初始化输入
-    this.inputs = new VisionIOInputs[io.length];
-    for (int i = 0; i < inputs.length; i++) {
-      inputs[i] = new VisionIOInputs();
-    }
+    public Vision(FieldTargets target, VisionConsumer consumer, VisionIO... io) {
+        this.consumer = consumer;
+        this.io = io;
 
-    // 初始化断连警报
-    this.disconnectedAlerts = new Alert[io.length];
-    for (int i = 0; i < inputs.length; i++) {
-      disconnectedAlerts[i] = new Alert(
-          "视觉相机 " + Integer.toString(i) + " 已断开连接。", AlertType.kWarning);
-    }
-  }
+        this.target = target;
 
-  /**
-   * 返回到最佳目标的X角度，可用于简单的视觉伺服
-   *
-   * @param cameraIndex 要使用的相机索引
-   */
-  public Rotation2d getTargetX(int cameraIndex) {
-    return inputs[cameraIndex].latestTargetObservation.tx();
-  }
-
-  @Override
-  public void periodic() {
-    for (int i = 0; i < io.length; i++) {
-      io[i].updateInputs(inputs[i]);
-    }
-
-    // 遍历相机
-    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-      // 更新断连警报
-      disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
-
-      // 遍历位姿观测
-      for (var observation : inputs[cameraIndex].poseObservations) {
-        // 检查是否要拒绝位姿
-        boolean rejectPose = observation.tagCount() == 0 // 必须至少有一个标签
-            || (observation.tagCount() == 1
-                && observation.ambiguity() > maxAmbiguity) // 不能有高度模糊性
-            || Math.abs(observation.pose().getZ()) > maxZError // Z坐标必须合理
-
-            // 必须在场地边界内
-            || observation.pose().getX() < 0.0
-            || observation.pose().getX() > aprilTagLayout.getFieldLength()
-            || observation.pose().getY() < 0.0
-            || observation.pose().getY() > aprilTagLayout.getFieldWidth();
-
-        // 如果被拒绝则跳过
-        if (rejectPose) {
-          continue;
+        // 初始化输入
+        this.inputs = new VisionIOInputs[io.length];
+        for (int i = 0; i < inputs.length; i++) {
+            inputs[i] = new VisionIOInputs();
         }
 
-        // 计算标准差
-        double stdDevFactor = Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
-        double linearStdDev = linearStdDevBaseline * stdDevFactor;
-        double angularStdDev = angularStdDevBaseline * stdDevFactor;
-        if (observation.type() == PoseObservationType.MEGATAG_2) {
-          linearStdDev *= linearStdDevMegatag2Factor;
-          angularStdDev *= angularStdDevMegatag2Factor;
+        // 初始化断连警报
+        this.disconnectedAlerts = new Alert[io.length];
+        for (int i = 0; i < inputs.length; i++) {
+            disconnectedAlerts[i] = new Alert(
+                    "视觉相机 " + Integer.toString(i) + " 已断开连接。", AlertType.kWarning);
         }
-        if (cameraIndex < cameraStdDevFactors.length) {
-          linearStdDev *= cameraStdDevFactors[cameraIndex];
-          angularStdDev *= cameraStdDevFactors[cameraIndex];
-        }
-
-        drivePose.set(observation.pose().toPose2d());
-
-        // 发送视觉观测
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
-      }
     }
-  }
 
-  @FunctionalInterface
-  public static interface VisionConsumer {
-    public void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs);
-  }
+    /**
+     * 返回到最佳目标的X角度，可用于简单的视觉伺服
+     *
+     * @param cameraIndex 要使用的相机索引
+     */
+    public Rotation2d getTargetX(int cameraIndex) {
+        return inputs[cameraIndex].latestTargetObservation.tx();
+    }
+
+    @Override
+    public void periodic() {
+        for (int i = 0; i < io.length; i++) {
+            io[i].updateInputs(inputs[i]);
+        }
+        // 遍历相机
+        for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
+            // 更新断连警报
+            disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
+
+            // 遍历位姿观测
+            for (var observation : inputs[cameraIndex].poseObservations) {
+                // 检查是否要拒绝位姿
+                boolean rejectPose = observation.tagCount() == 0 // 必须至少有一个标签
+                        || (observation.tagCount() == 1
+                                && observation.ambiguity() > maxAmbiguity) // 不能有高度模糊性
+                        || Math.abs(observation.pose().getZ()) > maxZError // Z坐标必须合理
+
+                        // 必须在场地边界内
+                        || observation.pose().getX() < 0.0
+                        || observation.pose().getX() > aprilTagLayout.getFieldLength()
+                        || observation.pose().getY() < 0.0
+                        || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+
+                // 如果被拒绝则跳过
+                if (rejectPose) {
+                    continue;
+                }
+
+                // 计算标准差
+                double stdDevFactor = Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+                double linearStdDev = linearStdDevBaseline * stdDevFactor;
+                double angularStdDev = angularStdDevBaseline * stdDevFactor;
+                if (observation.type() == PoseObservationType.MEGATAG_2) {
+                    linearStdDev *= linearStdDevMegatag2Factor;
+                    angularStdDev *= angularStdDevMegatag2Factor;
+                }
+                if (cameraIndex < cameraStdDevFactors.length) {
+                    linearStdDev *= cameraStdDevFactors[cameraIndex];
+                    angularStdDev *= cameraStdDevFactors[cameraIndex];
+                }
+
+                Pose3d pose = observation.pose();
+
+                drivePose.set(pose.toPose2d());
+
+                // 发送视觉观测
+                consumer.accept(pose.toPose2d(),
+                        Utils.fpgaToCurrentTime(observation.timestamp()),
+                        VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+            }
+            targetPose.set(target.reef.pose.transformBy(FieldTargets.leftPip3d));
+        }
+
+    }
+
+    @FunctionalInterface
+    public static interface VisionConsumer {
+        public void accept(
+                Pose2d visionRobotPoseMeters,
+                double timestampSeconds,
+                Matrix<N3, N1> visionMeasurementStdDevs);
+    }
 }

@@ -81,19 +81,19 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command toIn() {
-        return runOnce(() -> setPosition(1.616));
+        return runOnce(() -> setPosition(1.2));
     }
 
     public Command toL2() {
-        return runOnce(() -> setPosition(2.913));
+        return runOnce(() -> setPosition(2.167));
     }
 
     public Command toL3() {
-        return runOnce(() -> setPosition(5.174));
+        return runOnce(() -> setPosition(3.856));
     }
 
     public Command toL4() {
-        return runOnce(() -> setPosition(8.8));
+        return runOnce(() -> setPosition(6.725));
     }
 
     /**
