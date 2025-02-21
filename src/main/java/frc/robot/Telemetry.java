@@ -34,7 +34,7 @@ public class Telemetry {
      * @param maxSpeed Maximum speed in meters per second
      */
     public Telemetry() {
-        // SignalLogger.start();
+        SignalLogger.enableAutoLogging(true);
     }
 
     /* What to publish over networktables for telemetry */
@@ -99,60 +99,11 @@ public class Telemetry {
     private final double[] m_moduleStatesArray = new double[8];
     private final double[] m_moduleTargetsArray = new double[8];
 
-    private SwerveDriveState m_currentState;
-    private final Sendable m_driveStateSendable = new Sendable() {
-        @Override
-        public void initSendable(SendableBuilder builder) {
-            builder.setSmartDashboardType("SwerveDrive");
-            builder.addDoubleProperty("Front Left Angle",
-                    () -> m_currentState != null ? m_currentState.ModuleStates[0].angle.getRadians()
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Front Left Velocity",
-                    () -> m_currentState != null
-                            ? m_currentState.ModuleStates[0].speedMetersPerSecond
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Front Right Angle",
-                    () -> m_currentState != null ? m_currentState.ModuleStates[1].angle.getRadians()
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Front Right Velocity",
-                    () -> m_currentState != null
-                            ? m_currentState.ModuleStates[1].speedMetersPerSecond
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Back Left Angle",
-                    () -> m_currentState != null ? m_currentState.ModuleStates[2].angle.getRadians()
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Back Left Velocity",
-                    () -> m_currentState != null
-                            ? m_currentState.ModuleStates[2].speedMetersPerSecond
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Back Right Angle",
-                    () -> m_currentState != null ? m_currentState.ModuleStates[3].angle.getRadians()
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Back Right Velocity",
-                    () -> m_currentState != null
-                            ? m_currentState.ModuleStates[3].speedMetersPerSecond
-                            : 0.0,
-                    null);
-            builder.addDoubleProperty("Robot Angle",
-                    () -> m_currentState != null ? m_currentState.Pose.getRotation().getRadians()
-                            : 0.0,
-                    null);
-        }
-    };
-
     /**
      * Accept the swerve drive state and telemeterize it to SmartDashboard and
      * SignalLogger.
      */
     public void telemeterize(SwerveDriveState state) {
-        m_currentState = state;
 
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);
@@ -191,7 +142,5 @@ public class Telemetry {
 
             SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
         }
-
-        SmartDashboard.putData("Swerve Drive", m_driveStateSendable);
     }
 }

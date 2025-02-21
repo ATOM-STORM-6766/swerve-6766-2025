@@ -506,7 +506,8 @@ public class Constants {
 
         // 设备ID
         public static final int kMouthPositionMotorId = 40; // 位置电机
-        public static final int kMouthDriverMotorId = 41; // 位置电机
+        public static final int kMouthDriverMotorId = 41; // 驱动电机
+        public static final int kMouthHornMotorId = 42; // 角电机
         public static final int kEncoderChannel = 1; // Through Bore编码器通道
 
         // 机构参数
@@ -514,7 +515,7 @@ public class Constants {
         public static final double kMaxAngle = 0.27; // 最大角度（0.5转 = 180度）
 
         // Through Bore Encoder配置
-        public static final double kEncoderOffset = 0.1861383518994285;
+        public static final double kEncoderOffset = -0.01010699555929988;
 
         // 位置电机PID增益
         public static final Slot0Configs positionGains = new Slot0Configs()
@@ -560,6 +561,16 @@ public class Constants {
                 .withMotionMagic(new MotionMagicConfigs()
                         .withMotionMagicCruiseVelocity(100)
                         .withMotionMagicAcceleration(1000));
+
+        public static final TalonFXConfiguration hornConfigs = new TalonFXConfiguration()
+                .withCurrentLimits(new CurrentLimitsConfigs()
+                        .withStatorCurrentLimit(10)
+                        .withStatorCurrentLimitEnable(true))
+                .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
+                        .withForwardSoftLimitEnable(true)
+                        .withForwardSoftLimitThreshold(1.48)
+                        .withReverseSoftLimitEnable(true)
+                        .withReverseSoftLimitThreshold(0));
     }
 
     public class ClimberConstants {

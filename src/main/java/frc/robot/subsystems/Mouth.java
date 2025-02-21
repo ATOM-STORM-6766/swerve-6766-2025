@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.MouthConstants;
 import frc.robot.subsystems.vision.FieldTargets;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -37,6 +38,7 @@ public class Mouth extends SubsystemBase {
     // 硬件设备
     private final TalonFX m_positionMotor;
     private final TalonFX m_driveMotor;
+    private final TalonFX m_hornMotor;
     private final DutyCycleEncoder m_encoder;
     private final DigitalInput m_limitSwitch = new DigitalInput(2);
 
@@ -46,12 +48,13 @@ public class Mouth extends SubsystemBase {
     private final MotionMagicExpoVoltage m_positionRequest = new MotionMagicExpoVoltage(0).withEnableFOC(true);
     public final Trigger m_limitSwitchTrigger = new Trigger(m_limitSwitch::get);
 
+    MedianFilter filter = new MedianFilter(5);
+
     // 状态变量
     private FieldTargets target;
     private boolean m_isInitialized = false;
     private int m_stableReadingsCount = 0;
     private double m_lastEncoderReading = 0.0;
-    private double m_brakeFactor = 0.65; // 制动系数，可调
 
     /**
      * 构造函数
@@ -59,24 +62,25 @@ public class Mouth extends SubsystemBase {
     public Mouth(FieldTargets target) {
         this.target = target;
         // 初始化电机
-        m_driveMotor = new TalonFX(41);
         m_positionMotor = new TalonFX(MouthConstants.kMouthPositionMotorId);
+        m_driveMotor = new TalonFX(MouthConstants.kMouthDriverMotorId);
+        m_hornMotor = new TalonFX(MouthConstants.kMouthHornMotorId);
 
         // 配置位置电机
         m_positionMotor.getConfigurator().apply(MouthConstants.positionConfigs);
         m_driveMotor.getConfigurator().apply(MouthConstants.driveConfigs);
+        m_hornMotor.getConfigurator().apply(MouthConstants.hornConfigs);
 
         // 设置取球电机为制动模式
         m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
 
         // 初始化编码器
-        m_encoder = new DutyCycleEncoder(MouthConstants.kEncoderChannel, 1,
-                -0.07247199555929988 + 0.25 - 0.213135 + 0.0255);
+        m_encoder = new DutyCycleEncoder(MouthConstants.kEncoderChannel, 1, MouthConstants.kEncoderOffset);
 
         // 将电机位置设置为编码器位置
         syncMotorPosition();
-
-        SmartDashboard.putNumber("Mouth/BrakeFactor", m_brakeFactor);
+        m_hornMotor.setPosition(1.48);
+        m_hornMotor.set(-0.015);
     }
 
     /**
@@ -95,6 +99,7 @@ public class Mouth extends SubsystemBase {
                         if (currentReading > 0.5)
                             currentReading += -1;
                         m_positionMotor.setPosition(currentReading);
+                        m_positionMotor.setControl(m_positionRequest.withPosition(0));
                     }
                 } else {
                     m_stableReadingsCount = 0; // 如果读数不稳定，重置计数
@@ -123,13 +128,6 @@ public class Mouth extends SubsystemBase {
         SmartDashboard.putNumber("Mouth/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
         SmartDashboard.putNumber("Mouth/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
         SmartDashboard.putBoolean("Mouth/LimitSwitch", !m_limitSwitch.get());
-
-        // 从仪表盘读取制动系数
-        double newBrakeFactor = SmartDashboard.getNumber("Mouth/BrakeFactor", m_brakeFactor);
-        if (newBrakeFactor != m_brakeFactor) {
-            m_brakeFactor = newBrakeFactor;
-            SmartDashboard.putNumber("Mouth/BrakeFactor", m_brakeFactor);
-        }
     }
 
     /**
@@ -153,6 +151,8 @@ public class Mouth extends SubsystemBase {
             return;
         }
 
+        position = filter.calculate(position);
+        System.out.println(position);
         // 限制在有效范围内
         if (position > 0.25 || position < -0.25)
             position = 0;
@@ -205,8 +205,8 @@ public class Mouth extends SubsystemBase {
     public Command stopDrive() {
         return runOnce(() -> {
             double currentSpeed = m_driveMotor.getVelocity().getValueAsDouble();
-            m_driveMotor.setControl(m_voltageOutRequest.withVelocity(-currentSpeed * m_brakeFactor));
-            System.out.println(-currentSpeed * m_brakeFactor);
+            m_driveMotor.setControl(m_voltageOutRequest.withVelocity(-currentSpeed * 0.65));
+            System.out.println(-currentSpeed * 0.65);
         })
                 .andThen(Commands.waitSeconds(0.05))
                 .andThen(setSpeed(0)); // 最后设置为0

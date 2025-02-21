@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.commands.PathfindingCommand;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -16,9 +17,13 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
     private final Timer m_disableTimer = new Timer();
 
+    // private final TestContainer m_robotContainer;
     private final RobotContainer m_robotContainer;
 
     public Robot() {
+
+        CameraServer.startAutomaticCapture();
+        // m_robotContainer = new TestContainer();
         m_robotContainer = new RobotContainer();
     }
 
@@ -39,16 +44,16 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (m_disableTimer.hasElapsed(5)) {
-            m_robotContainer.drivetrain.setNeutralMode(NeutralModeValue.Coast);
-            m_disableTimer.stop();
-            m_disableTimer.reset();
-        }
+        // if (m_disableTimer.hasElapsed(5)) {
+        // m_robotContainer.drivetrain.setNeutralMode(NeutralModeValue.Coast);
+        // m_disableTimer.stop();
+        // m_disableTimer.reset();
+        // }
     }
 
     @Override
     public void disabledExit() {
-        m_robotContainer.drivetrain.setNeutralMode(NeutralModeValue.Brake);
+        // m_robotContainer.drivetrain.setNeutralMode(NeutralModeValue.Brake);
     }
 
     @Override

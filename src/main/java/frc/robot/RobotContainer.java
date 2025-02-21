@@ -32,10 +32,6 @@ import frc.robot.subsystems.Mouth;
 public class RobotContainer {
 
     /* 设置平台所需的转向驱动控制绑定 */
-    // private final SwerveRequest.SwerveDriveBrake brake = new
-    // SwerveRequest.SwerveDriveBrake();
-    // private final SwerveRequest.PointWheelsAt point = new
-    // SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry();
 
@@ -108,8 +104,8 @@ public class RobotContainer {
         // 按下左缓冲键时重置场地坐标系朝向
         joystick1.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick1.a().whileTrue(new AutoTargetCommand(
-                () -> targets.reef.pose.toPose2d().plus(new Transform2d(0.55, 0, Rotation2d.k180deg))));
+        // joystick1.a().whileTrue(new AutoTargetCommand(
+        //         () -> targets.reef.pose.toPose2d().plus(new Transform2d(0.55, 0, Rotation2d.k180deg))));
 
         // Intake控制
         // 右扳机控制进料速度（0-100%）
@@ -147,7 +143,7 @@ public class RobotContainer {
 
         mouth.m_limitSwitchTrigger.toggleOnFalse(mouth.stopDrive());
 
-        joystick2.leftBumper().whileTrue(mouth.run(() -> mouth.setLeft(drivetrain.getState().Pose)))// mouth.setPosition(-0.25)))//
+        joystick2.leftBumper().whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))//mouth.setLeft(drivetrain.getState().Pose)))// 
                 .onFalse(mouth.runOnce(() -> mouth.stop())); // 收起
 
         joystick2.rightBumper().whileTrue(mouth.run(() -> mouth.setPosition(0.2)))// mouth.setRight(drivetrain.getState().Pose)))
