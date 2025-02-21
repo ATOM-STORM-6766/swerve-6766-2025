@@ -147,7 +147,7 @@ public class RobotContainer {
 
         mouth.m_limitSwitchTrigger.toggleOnFalse(mouth.stopDrive());
 
-        joystick2.leftBumper().whileTrue(mouth.run(() -> mouth.setLeft(drivetrain.getState().Pose)))// mouth.setPosition(-0.25)))//
+        joystick2.leftBumper().whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))//mouth.setLeft(drivetrain.getState().Pose)))// 
                 .onFalse(mouth.runOnce(() -> mouth.stop())); // 收起
 
         joystick2.rightBumper().whileTrue(mouth.run(() -> mouth.setPosition(0.2)))// mouth.setRight(drivetrain.getState().Pose)))
