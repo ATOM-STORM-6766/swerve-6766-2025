@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Light extends SubsystemBase {
@@ -31,9 +30,9 @@ public class Light extends SubsystemBase {
         m_blackLedBuffer = new AddressableLEDBuffer(60);
         m_LedBuffer = new AddressableLEDBuffer(60);
         m_led.start();
-        setStart();
         m_notifier = new Notifier(() -> {
         });
+        setRainbow();
         m_notifier.setName("FlashingLight");
     }
 

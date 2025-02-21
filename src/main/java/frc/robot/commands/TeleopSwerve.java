@@ -25,9 +25,9 @@ import frc.robot.subsystems.Swerve;
 public class TeleopSwerve extends Command {
     private final Swerve m_swerveDrivetrain;
     private final CommandXboxController m_controller;
-    private final SlewRateLimiter xfilter = new SlewRateLimiter(4);
-    private final SlewRateLimiter yfilter = new SlewRateLimiter(4);
-    private final SlewRateLimiter zfilter = new SlewRateLimiter(4);
+    private final SlewRateLimiter xfilter = new SlewRateLimiter(3);
+    private final SlewRateLimiter yfilter = new SlewRateLimiter(3);
+    private final SlewRateLimiter zfilter = new SlewRateLimiter(2);
 
     // 最大速度和角速度
     private final double MaxSpeed = SwerveConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -55,6 +55,7 @@ public class TeleopSwerve extends Command {
 
     // 用于角度保持的变量
     private Rotation2d lastAngle; // 记录最后的目标角度
+    private boolean isRotating = true;
 
     /**
      * 构造函数
@@ -75,14 +76,26 @@ public class TeleopSwerve extends Command {
     @Override
     public void execute() {
         // 获取手柄输入并应用死区
-        double xSpeed = -MathUtil.applyDeadband(m_controller.getLeftY(),0.1);// 
-                                                                    // 
-         double ySpeed = -MathUtil.applyDeadband(m_controller.getLeftX(),0.1);
-                                                                     // -yfilter.calculate(m_controller.getLeftX());// 
-        double rotationSpeed = -MathUtil.applyDeadband(m_controller.getRightX(), 0.1);// -zfilter.calculate(m_controller.getRightX());
+        double xSpeed = -xfilter.calculate(m_controller.getLeftY());
+        // -MathUtil.applyDeadband(m_controller.getLeftY(), 0.1);
+        double ySpeed = -yfilter.calculate(m_controller.getLeftX());
+        // -MathUtil.applyDeadband(m_controller.getLeftX(), 0.1);
+        double rotationSpeed = -zfilter.calculate(m_controller.getRightX());
+        // -MathUtil.applyDeadband(m_controller.getRightX(), 0.1);
 
         // 处理旋转控制
         boolean rotating = Math.abs(rotationSpeed) > 0.01;
+
+        if (rotating) {
+            isRotating = true;
+        } // else {
+          // // 如果刚停止旋转，更新目标角度为当前角度
+          // lastAngle = m_swerveDrivetrain.getState().Pose.getRotation();
+          // isRotating = false;
+          // // if (correctionTimer.hasElapsed(CORRECTION_TIME_THRESHOLD)) {
+          // // isRotating = false;
+          // // }
+          // }
 
         // 根据控制模式设置底盘运动
         m_swerveDrivetrain.setControl(
@@ -97,11 +110,4 @@ public class TeleopSwerve extends Command {
                                 .withVelocityY(ySpeed * MaxSpeed)
                                 .withTargetDirection(lastAngle));
     }
-
-    // @Override
-    // public void end(boolean interrupted) {
-    // // 命令结束时（无论是正常结束还是被打断）：
-    // // 使用制动模式停止底盘
-    // m_swerveDrivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
-    // }
 }
