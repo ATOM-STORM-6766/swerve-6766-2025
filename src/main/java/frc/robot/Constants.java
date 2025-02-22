@@ -12,8 +12,11 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Constants {
+
+    public static final Alliance alliance = Alliance.Blue;
 
     // 由 Tuner X Swerve Project Generator 生成
     // https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html

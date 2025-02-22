@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.Follower;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -59,12 +60,8 @@ public class Elevator extends SubsystemBase {
      */
     public void setPosition(double position) {
         // 限制在有效范围内
+        m_targetPosition = position;
         m_motor1.setControl(m_positionRequest.withPosition(position));
-    }
-
-    public void setOpenPosition(double position) {
-        // 限制在有效范围内
-        m_motor1.setControl(new VoltageOut(12 * position));
     }
 
     /*
@@ -77,23 +74,48 @@ public class Elevator extends SubsystemBase {
      */
 
     public Command toL1() {
-        return runOnce(() -> setPosition(1.18));
+        return new FunctionalCommand(
+            () -> setPosition(1.18), // 初始化：设置目标位置
+            () -> {}, // 执行：无需额外操作
+            interrupted -> {}, // 结束：无需额外操作
+            this::isAtPosition, // 结束条件：到达目标位置
+            this); // 需求：电梯子系统
     }
 
     public Command toIn() {
-        return runOnce(() -> setPosition(1.2));
+        return new FunctionalCommand(
+            () -> setPosition(1.2),
+            () -> {},
+            interrupted -> {},
+            this::isAtPosition,
+            this);
     }
 
     public Command toL2() {
-        return runOnce(() -> setPosition(2.167));
+        return new FunctionalCommand(
+            () -> setPosition(2.167),
+            () -> {},
+            interrupted -> {},
+            this::isAtPosition,
+            this);
     }
 
     public Command toL3() {
-        return runOnce(() -> setPosition(3.856));
+        return new FunctionalCommand(
+            () -> setPosition(3.856),
+            () -> {},
+            interrupted -> {},
+            this::isAtPosition,
+            this);
     }
 
     public Command toL4() {
-        return runOnce(() -> setPosition(6.725));
+        return new FunctionalCommand(
+            () -> setPosition(6.725),
+            () -> {},
+            interrupted -> {},
+            this::isAtPosition,
+            this);
     }
 
     /**
@@ -111,7 +133,7 @@ public class Elevator extends SubsystemBase {
      * @return 是否到达
      */
     public boolean isAtPosition() {
-        return Math.abs(getPosition() - m_targetPosition) < 0.01;
+        return Math.abs(getPosition() - m_targetPosition) < 0.03;
     }
 
     /**

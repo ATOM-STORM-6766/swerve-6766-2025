@@ -2,9 +2,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import static edu.wpi.first.units.Units.Rotation;
+import java.util.function.Supplier;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -21,8 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -139,7 +136,7 @@ public class Mouth extends SubsystemBase {
      * @param speed 速度（-1.0 到 1.0）
      */
     public Command setSpeed(double speed) {
-        return runOnce(() -> m_driveMotor.setControl(m_voltageOutRequest.withVelocity(speed)));
+        return run(() -> m_driveMotor.setControl(m_voltageOutRequest.withVelocity(speed)));
     }
 
     /**
@@ -149,35 +146,31 @@ public class Mouth extends SubsystemBase {
      */
     public void setPosition(double position) {
         // 如果未初始化完成，拒绝控制请求
+
         if (!m_isInitialized) {
             System.out.println("Mouth not initialized");
             return;
         }
 
-        position = filter.calculate(position);
+        // position = filter.calculate(position);
         // 限制在有效范围内
-        if (position > 0.25 || position < -0.25)
-            position = 0;
         m_positionMotor.setControl(m_positionRequest.withPosition(position));
     }
 
-    public void setLeft(Pose2d curr) {
-        Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr);
+    public void setLeft(Supplier<Pose2d> curr) {
+        Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr.get());
         drivePose.set(t.getTranslation());
         Rotation2d position = t.getTranslation().getAngle();
-        SignalLogger.writeDouble("Mouth/targePosition", position.getDegrees());
-        double x = linkage.calculate(143.28 - position.plus(Rotation2d.kCCW_90deg).getRadians()) * 180 / Math.PI;
-        SignalLogger.writeDouble("Mouth/targePositionByCal", x);
-        double rotation = MouthConstants.Mtom.get(-position.getDegrees());
-        SignalLogger.writeDouble("Mouth/targePositionByGet", rotation * 360);
-        setPosition(x / 180);
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI;
+        setPosition(x / 360);
     }
 
-    public void setRight(Pose2d curr) {
-        double position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr)
+    public void setRight(Supplier<Pose2d> curr) {
+        Rotation2d position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr.get())
                 .getTranslation()
-                .getAngle().getRadians();
-        setPosition(position);
+                .getAngle();
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI;
+        setPosition(x / 360);
     }
 
     /**

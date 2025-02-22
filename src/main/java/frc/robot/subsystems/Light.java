@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Light extends SubsystemBase {
     private static Light light;
@@ -39,8 +40,8 @@ public class Light extends SubsystemBase {
     public void setStart() {
         m_LedBuffer.forEach((index, r, g, b) -> {
             m_LedBuffer.setLED(index,
-                    Color.kWhite//DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Color.kRed : Color.kBlue
-                    );
+                    Constants.alliance == Alliance.Red ? Color.kRed : Color.kBlue// Color.kWhite//
+            );
         });
         m_led.setData(m_LedBuffer);
     }

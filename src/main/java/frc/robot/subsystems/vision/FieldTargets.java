@@ -17,7 +17,7 @@ import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 public class FieldTargets {
     public static Transform2d leftPip = new Transform2d(-0.04592, -0.16429-0.05, Rotation2d.kZero);
     public static Transform3d leftPip3d = new Transform3d(-0.04592, -0.16429, 0.5, Rotation3d.kZero);
-    public static Transform2d rightPip = new Transform2d(-0.04592, 0.16429, Rotation2d.kZero);
+    public static Transform2d rightPip = new Transform2d(-0.04592, 0.16429-0.05, Rotation2d.kZero);
 
     // 红方目标位置
     public static final Pose3d[] redStations = {

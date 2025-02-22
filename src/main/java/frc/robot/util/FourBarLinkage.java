@@ -109,7 +109,7 @@ public class FourBarLinkage {
         return result;
     }
 
-    public double calculate(double targetTheta3) {
+    public double  calculate(double targetTheta3) {
         return calculate(targetTheta3, 1.0, 1e-6, 50);
     }
 
@@ -175,6 +175,6 @@ public class FourBarLinkage {
         }
 
         // 如果没有找到精确解，但有接近的解，返回最佳结果
-        return minError < tolerance * 10 ? bestTheta1 : 143.28;
+        return minError < tolerance * 10 ? 2.500708-bestTheta1 : 0;
     }
 }
