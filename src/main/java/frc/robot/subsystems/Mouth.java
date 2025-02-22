@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import static edu.wpi.first.units.Units.Rotation;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.MouthConstants;
 import frc.robot.subsystems.vision.FieldTargets;
+import frc.robot.util.FourBarLinkage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -55,6 +57,7 @@ public class Mouth extends SubsystemBase {
     private boolean m_isInitialized = false;
     private int m_stableReadingsCount = 0;
     private double m_lastEncoderReading = 0.0;
+    private FourBarLinkage linkage = new FourBarLinkage();
 
     /**
      * 构造函数
@@ -152,35 +155,22 @@ public class Mouth extends SubsystemBase {
         }
 
         position = filter.calculate(position);
-        System.out.println(position);
         // 限制在有效范围内
         if (position > 0.25 || position < -0.25)
             position = 0;
         m_positionMotor.setControl(m_positionRequest.withPosition(position));
     }
 
-    private Rotation2d _Mtom(Rotation2d m) {
-        double a = 0.030;
-        double b = 0.150;
-        double c = 0.170;
-        double d = 0.083;
-
-        m = Rotation2d.fromDegrees(90).minus(m);
-
-        double R = Math.sqrt(a * a + d * d - 2 * d * b * m.getCos());
-
-        double theta = Math.asin(b * m.getSin() / R);
-        double alpha = Math.acos((R * R + a * a - c * c) / (2 * R * a));
-
-        return new Rotation2d(theta + alpha).minus(Rotation2d.fromDegrees(143.2819185155736));
-    }
-
     public void setLeft(Pose2d curr) {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr);
         drivePose.set(t.getTranslation());
-        double position = t.getTranslation().getAngle().getDegrees();
-        position = MouthConstants.Mtom.get(position);
-        setPosition(position);
+        Rotation2d position = t.getTranslation().getAngle();
+        SignalLogger.writeDouble("Mouth/targePosition", position.getDegrees());
+        double x = linkage.calculate(143.28 - position.plus(Rotation2d.kCCW_90deg).getRadians()) * 180 / Math.PI;
+        SignalLogger.writeDouble("Mouth/targePositionByCal", x);
+        double rotation = MouthConstants.Mtom.get(-position.getDegrees());
+        SignalLogger.writeDouble("Mouth/targePositionByGet", rotation * 360);
+        setPosition(x / 180);
     }
 
     public void setRight(Pose2d curr) {
@@ -216,10 +206,6 @@ public class Mouth extends SubsystemBase {
      * 回中所有电机
      */
     public void stop() {
-        // 如果未初始化完成，直接返回
-        if (!m_isInitialized) {
-            return;
-        }
         setPosition(0);
     }
 }

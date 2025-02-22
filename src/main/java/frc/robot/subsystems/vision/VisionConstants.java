@@ -23,8 +23,8 @@ public class VisionConstants {
         public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
         // 相机名称，必须与协处理器上配置的名称匹配
-        public static String camera0Name = "Arducam_OV9281_USB_Camera";// "Arducam_OV9281_USB_Camera";
-        public static String camera1Name = "Arducam_OV9281_Right_Front";
+        public static String camera0Name = "Arducam_OV9281_Front";// "Arducam_OV9281_USB_Camera";
+        public static String camera1Name = "Arducam_OV9281_Back";
 
         // 机器人到相机的变换
         // (Limelight不使用此配置，请在web界面中配置)

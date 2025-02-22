@@ -35,6 +35,7 @@ public class Telemetry {
      */
     public Telemetry() {
         SignalLogger.enableAutoLogging(true);
+        SignalLogger.start();
     }
 
     /* What to publish over networktables for telemetry */

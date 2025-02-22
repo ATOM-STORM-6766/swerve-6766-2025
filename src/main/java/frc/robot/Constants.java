@@ -25,7 +25,7 @@ public class Constants {
         // 转向电机使用任何 SwerveModule.SteerRequestType 控制请求，
         // 输出类型由 SwerveModuleConstants.SteerMotorClosedLoopOutput 指定
         private static final Slot0Configs steerGains = new Slot0Configs()
-                .withKP(10).withKI(0).withKD(0.01)
+                .withKP(5).withKI(0).withKD(0.01)
                 .withKS(0.25727).withKV(1.6302).withKA(0)
                 .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
         // 当使用闭环控制时，驱动电机使用由 SwerveModuleConstants.DriveMotorClosedLoopOutput 指定的控制输出类型

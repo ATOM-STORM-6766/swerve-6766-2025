@@ -19,10 +19,10 @@ public class AutoTargetCommand extends Command {
 
     // 路径约束配置
     private static final PathConstraints constraints = new PathConstraints(
-            1, // 最大速度 (m/s)
-            0.5, // 最大加速度 (m/s²)
-            Math.PI * 0.5, // 最大角速度 (deg/s)
-            Math.PI * 0.3 // 最大角加速度 (deg/s²)
+            4.300, // 最大速度 (m/s)
+            3.900, // 最大加速度 (m/s²)
+            282.996 * Math.PI / 180, // 最大角速度 (deg/s)
+            141 * Math.PI / 180// 最大角加速度 (deg/s²)
     );
 
     /**

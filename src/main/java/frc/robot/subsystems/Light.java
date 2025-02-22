@@ -32,14 +32,15 @@ public class Light extends SubsystemBase {
         m_led.start();
         m_notifier = new Notifier(() -> {
         });
-        setRainbow();
+        setStart();
         m_notifier.setName("FlashingLight");
     }
 
     public void setStart() {
         m_LedBuffer.forEach((index, r, g, b) -> {
             m_LedBuffer.setLED(index,
-                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Color.kRed : Color.kBlue);
+                    Color.kWhite//DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Color.kRed : Color.kBlue
+                    );
         });
         m_led.setData(m_LedBuffer);
     }

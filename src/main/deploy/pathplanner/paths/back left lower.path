@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1566218468875962,
-        "y": 0.9767919371175594
+        "x": 1.0521045918367349,
+        "y": 0.8649553571428567
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7597372475596695,
-        "y": 1.4491719241227186
+        "x": 1.6522616316527492,
+        "y": 1.3061443956089023
       },
       "isLocked": false,
       "linkedName": "下站"
@@ -20,8 +20,8 @@
         "y": 2.9236694630518834
       },
       "prevControl": {
-        "x": 3.2166763516524655,
-        "y": 2.4566064425488925
+        "x": 3.255693343059565,
+        "y": 2.4848366213835873
       },
       "nextControl": null,
       "isLocked": false,
@@ -35,7 +35,7 @@
   "globalConstraints": {
     "maxVelocity": 4.3,
     "maxAcceleration": 3.9,
-    "maxAngularVelocity": 282.99609375,
+    "maxAngularVelocity": 282.996,
     "maxAngularAcceleration": 1038.0,
     "nominalVoltage": 11.5,
     "unlimited": false

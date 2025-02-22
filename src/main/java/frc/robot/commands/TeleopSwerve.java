@@ -47,12 +47,6 @@ public class TeleopSwerve extends Command {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage) // 使用开环电压控制驱动电机
             .withSteerRequestType(SteerRequestType.MotionMagicExpo); // 使用MotionMagic控制转向电机
 
-    private final SwerveRequest.RobotCentric roboCentric = new SwerveRequest.RobotCentric()
-            .withDeadband(MaxSpeed * 0.1) // 设置移动死区为最大速度的10%
-            .withRotationalDeadband(MaxAngularRate * 0.1) // 设置旋转死区为最大角速度的10%
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage) // 使用开环电压控制驱动电机
-            .withSteerRequestType(SteerRequestType.MotionMagicExpo); // 使用MotionMagic控制转向电机
-
     // 用于角度保持的变量
     private Rotation2d lastAngle; // 记录最后的目标角度
     private boolean isRotating = true;
@@ -99,7 +93,7 @@ public class TeleopSwerve extends Command {
 
         // 根据控制模式设置底盘运动
         m_swerveDrivetrain.setControl(
-                rotating ?
+                isRotating ?
                 // 旋转模式：使用场地中心控制
                         fieldCentric.withVelocityX(xSpeed * MaxSpeed)
                                 .withVelocityY(ySpeed * MaxSpeed)
