@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -167,12 +168,14 @@ public class RobotContainer {
                 NamedCommands.registerCommand("L4", elevator.toL4());
                 NamedCommands.registerCommand("In", elevator.toIn());
                 NamedCommands.registerCommand("Out", mouth.setSpeed(10));
-                NamedCommands.registerCommand("Put",
-                                mouth.setSpeed(10).unless(() -> mouth.m_limitSwitchTrigger.getAsBoolean()));
+                NamedCommands.registerCommand("Put", mouth.setSpeed(10).withTimeout(0.5));
                 NamedCommands.registerCommand("LeftReef",
-                                mouth.run(() -> mouth.setLeft(() -> drivetrain.getState().Pose)));
+                                mouth.run(() -> mouth.setLeft(() -> drivetrain.getState().Pose)).withTimeout(0.5));
                 NamedCommands.registerCommand("RightReef",
-                                mouth.run(() -> mouth.setRight(() -> drivetrain.getState().Pose)));
+                                mouth.run(() -> mouth.setRight(() -> drivetrain.getState().Pose)).withTimeout(0.5));
+                NamedCommands.registerCommand("zhong",
+                                mouth.run(() -> mouth.setPosition(0)).withTimeout(0.8));
+                NamedCommands.registerCommand("WaitFull", Commands.waitUntil(() ->!mouth.m_limitSwitch.get()));
         }
 
         public Command getAutonomousCommand() {

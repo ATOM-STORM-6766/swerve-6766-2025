@@ -39,7 +39,7 @@ public class Mouth extends SubsystemBase {
     private final TalonFX m_driveMotor;
     private final TalonFX m_hornMotor;
     private final DutyCycleEncoder m_encoder;
-    private final DigitalInput m_limitSwitch = new DigitalInput(2);
+    public final DigitalInput m_limitSwitch = new DigitalInput(2);
 
     // 控制请求
     private final MotionMagicVelocityVoltage m_voltageOutRequest = new MotionMagicVelocityVoltage(0)
@@ -192,7 +192,7 @@ public class Mouth extends SubsystemBase {
             System.out.println(-currentSpeed * 0.65);
         })
                 .andThen(Commands.waitSeconds(0.05))
-                .andThen(setSpeed(0)); // 最后设置为0
+                .andThen(setSpeed(0).withTimeout(0)); // 最后设置为0
     }
 
     /**
