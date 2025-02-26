@@ -30,6 +30,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 
@@ -39,7 +40,7 @@ public class Vision extends SubsystemBase {
     private final VisionIOInputs[] inputs;
     private final Alert[] disconnectedAlerts;
 
-    private final FieldTargets target;
+    private final FieldTargets target = Constants.targets;
 
     /* What to publish over networktables for telemetry */
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -50,11 +51,9 @@ public class Vision extends SubsystemBase {
     private final StructPublisher<Pose3d> targetPose = driveStateTable.getStructTopic("targetReef", Pose3d.struct)
             .publish();
 
-    public Vision(FieldTargets target, VisionConsumer consumer, VisionIO... io) {
+    public Vision(VisionConsumer consumer, VisionIO... io) {
         this.consumer = consumer;
         this.io = io;
-
-        this.target = target;
 
         // 初始化输入
         this.inputs = new VisionIOInputs[io.length];

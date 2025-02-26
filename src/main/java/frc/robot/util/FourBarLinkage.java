@@ -175,6 +175,6 @@ public class FourBarLinkage {
         }
 
         // 如果没有找到精确解，但有接近的解，返回最佳结果
-        return minError < tolerance * 10 ? 2.500708-bestTheta1 : 0;
+        return minError < tolerance * 10 ? bestTheta1 : 2.500708;
     }
 }

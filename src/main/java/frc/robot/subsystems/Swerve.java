@@ -231,7 +231,7 @@ public class Swerve extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> impleme
                             // 平移的PID常量
                             new PIDConstants(5, 0, 0),
                             // 旋转的PID常量
-                            new PIDConstants(3, 0, 0)),
+                            new PIDConstants(5, 0, 0)),
                     config,
                     // 假设路径需要根据红蓝方进行翻转，这通常是需要的
                     () -> Constants.alliance == Alliance.Red,

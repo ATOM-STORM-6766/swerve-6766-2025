@@ -22,7 +22,7 @@ public class AutoTargetCommand extends Command {
             4.300, // 最大速度 (m/s)
             3.900, // 最大加速度 (m/s²)
             282.996 * Math.PI / 180, // 最大角速度 (deg/s)
-            141 * Math.PI / 180// 最大角加速度 (deg/s²)
+            200 * Math.PI / 180// 最大角加速度 (deg/s²)
     );
 
     /**

@@ -13,16 +13,23 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.subsystems.vision.FieldTargets;
 
 public class Constants {
 
-    public static final Alliance alliance = Alliance.Blue;
+    public static final Alliance alliance = Alliance.Red;
+
+    public static final FieldTargets targets = new FieldTargets(Constants.alliance);
 
     // 由 Tuner X Swerve Project Generator 生成
     // https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
     public class SwerveConstants {
 
-        public static final PhoenixPIDController HeadingController = new PhoenixPIDController(3, 0, 0.01);
+        public static final PhoenixPIDController HeadingController;
+        static {
+            HeadingController = new PhoenixPIDController(3, 0, 0.01);
+            HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+        }
         // 两组增益都需要根据您的具体机器人进行调整
 
         // 转向电机使用任何 SwerveModule.SteerRequestType 控制请求，
@@ -240,7 +247,7 @@ public class Constants {
         public static final TalonFXConfiguration positionConfigs = new TalonFXConfiguration()
                 .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(new CurrentLimitsConfigs()
-                        .withStatorCurrentLimit(30)
+                        .withStatorCurrentLimit(20)
                         .withStatorCurrentLimitEnable(true))
                 .withMotionMagic(new MotionMagicConfigs()
                         .withMotionMagicExpo_kV(0.012)
@@ -518,7 +525,7 @@ public class Constants {
         public static final double kMaxAngle = 0.27; // 最大角度（0.5转 = 180度）
 
         // Through Bore Encoder配置
-        public static final double kEncoderOffset = -0.01010699555929988;
+        public static final double kEncoderOffset = -0.01010699555929988 + 0.0102992424508561165;
 
         // 位置电机PID增益
         public static final Slot0Configs positionGains = new Slot0Configs()

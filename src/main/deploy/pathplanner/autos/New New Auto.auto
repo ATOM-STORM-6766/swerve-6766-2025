@@ -7,19 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "RightReef"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.35
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "zhong"
+            "name": "Temp"
           }
         }
       ]

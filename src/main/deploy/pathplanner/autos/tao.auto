@@ -5,121 +5,27 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "lower start to left lower"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "RightReef"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Put"
-                }
-              },
-              {
-                "type": "parallel",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "zhong"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "In"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "right lower to lower station"
+            "name": "L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "WaitFull"
+            "name": "In"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Temp"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "back left lower"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "LeftReef"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Put"
-                }
-              },
-              {
-                "type": "parallel",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "zhong"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "In"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "left lower to lower station"
+            "pathName": "lower start to left lower"
           }
         }
       ]

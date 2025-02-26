@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.Constants.MouthConstants;
 import frc.robot.subsystems.vision.FieldTargets;
 import frc.robot.util.FourBarLinkage;
@@ -50,7 +51,7 @@ public class Mouth extends SubsystemBase {
     MedianFilter filter = new MedianFilter(5);
 
     // 状态变量
-    private FieldTargets target;
+    private FieldTargets target = Constants.targets;
     private boolean m_isInitialized = false;
     private int m_stableReadingsCount = 0;
     private double m_lastEncoderReading = 0.0;
@@ -59,8 +60,7 @@ public class Mouth extends SubsystemBase {
     /**
      * 构造函数
      */
-    public Mouth(FieldTargets target) {
-        this.target = target;
+    public Mouth() {
         // 初始化电机
         m_positionMotor = new TalonFX(MouthConstants.kMouthPositionMotorId);
         m_driveMotor = new TalonFX(MouthConstants.kMouthDriverMotorId);
@@ -161,7 +161,7 @@ public class Mouth extends SubsystemBase {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr.get());
         drivePose.set(t.getTranslation());
         Rotation2d position = t.getTranslation().getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI;
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI+15;
         setPosition(x / 360);
     }
 
@@ -169,7 +169,7 @@ public class Mouth extends SubsystemBase {
         Rotation2d position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr.get())
                 .getTranslation()
                 .getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI;
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI+15;
         setPosition(x / 360);
     }
 

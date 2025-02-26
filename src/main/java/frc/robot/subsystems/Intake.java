@@ -38,7 +38,7 @@ public class Intake extends SubsystemBase {
         m_positionMotor.getConfigurator().apply(IntakeConstants.positionConfigs);
 
         // 初始化编码器
-        m_encoder = new DutyCycleEncoder(IntakeConstants.kEncoderChannel, 1, -0.236083984375);// -IntakeConstants.kEncoderOffset);//
+        m_encoder = new DutyCycleEncoder(IntakeConstants.kEncoderChannel, 1, -0.236083984375-0.242822);// -IntakeConstants.kEncoderOffset);//
                                                                                               // +0.1127504062166605
         m_encoder.setInverted(true);
 
@@ -100,7 +100,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command toVertical() {
-        return runOnce(() -> setPosition(0.24));
+        return runOnce(() -> setPosition(0.245));
     }
 
     public Command toAlga(){
