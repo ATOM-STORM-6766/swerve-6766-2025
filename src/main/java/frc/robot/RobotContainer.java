@@ -36,6 +36,7 @@ public class RobotContainer {
 
     /* 设置平台所需的转向驱动控制绑定 */
 
+    public final Light light = Light.getInstance();
     private final Telemetry logger = new Telemetry();
 
     private final CommandXboxController joystick1 = new CommandXboxController(0);
@@ -55,13 +56,17 @@ public class RobotContainer {
     public final Mouth mouth = new Mouth();
     public final Climber climber = new Climber();
     public final Vision vision;
-    public final Light light = Light.getInstance();
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
         drivetrain.registerTelemetry(logger::telemeterize);
+        light.speed = () -> {
+            return Math.sqrt(Math.pow(joystick1.getLeftX(), 2) +
+                    Math.pow(joystick1.getLeftY(), 2) +
+                    Math.pow(joystick1.getRightX(), 2));
+        };
 
         if (RobotBase.isReal()) {
             vision = new Vision(drivetrain::addVisionMeasurement,
@@ -75,11 +80,13 @@ public class RobotContainer {
             // new VisionIOPhotonVision(camera1Name, robotToCamera1));
         }
 
+        configureAuto();//////////////////////////
         autoChooser = AutoBuilder.buildAutoChooser("None");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
-        configureAuto();
         configureBindings();
+
+        light.isReady();
     }
 
     private void configureBindings() {
@@ -105,8 +112,12 @@ public class RobotContainer {
         joystick1.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         joystick1.a().whileTrue(new AutoTargetCommand(
-                () -> Constants.targets.reef.pose.toPose2d().plus(new Transform2d(0.53, 0, Rotation2d.k180deg))));
+                () -> Constants.targets.reef.pose.toPose2d()
+                        .plus(new Transform2d(0.53, 0, Rotation2d.k180deg))));
 
+        joystick1.b().whileTrue(new AutoTargetCommand(
+                () -> Constants.targets.getNearestStation(drivetrain.getState().Pose).toPose2d()
+                        .plus(new Transform2d(0.35, 0, Rotation2d.kZero))));
         joystick1.povCenter().whileFalse(new SwerveWithHead(drivetrain, joystick1.getHID()));
 
         // Intake控制
@@ -141,8 +152,11 @@ public class RobotContainer {
         joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(25))// Commands.print("T"))//
                 .onFalse(mouth.setSpeed(0)); // 吐 //Commands.print("F"));//
 
-        joystick2.y().and(() -> mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(10))// Commands.print("T"))//
-                .onFalse(mouth.setSpeed(0)); // 吐 //Commands.print("F"));//
+        joystick2.y().and(() -> mouth.m_limitSwitch.get())
+                .onTrue(mouth.setSpeed(8))// Commands.print("T"))//
+                .onFalse(mouth.setSpeed(0)); // 吐
+
+        joystick2.start().onTrue(mouth.setSpeed(-8)).onFalse(mouth.setSpeed(0));
 
         joystick2.b().onTrue(mouth.setSpeed(50)).onFalse(mouth.setSpeed(0));
 
@@ -164,20 +178,25 @@ public class RobotContainer {
 
     private void configureAuto() {
         NamedCommands.registerCommand("Temp", new PrintCommand("Temp"));
-        NamedCommands.registerCommand("L4", elevator.toL4());
-        NamedCommands.registerCommand("In", elevator.toIn());
-        // NamedCommands.registerCommand("Out", mouth.setSpeed(10));
-        // NamedCommands.registerCommand("Put", mouth.setSpeed(10).withTimeout(0.5));
-        // NamedCommands.registerCommand("LeftReef",
-        //         mouth.run(() -> mouth.setLeft(() -> drivetrain.getState().Pose)).withTimeout(0.5));
-        // NamedCommands.registerCommand("RightReef",
-        //         mouth.run(() -> mouth.setRight(() -> drivetrain.getState().Pose)).withTimeout(0.5));
-        // NamedCommands.registerCommand("zhong",
-        //         mouth.run(() -> mouth.setPosition(0)).withTimeout(0.8));
-        // NamedCommands.registerCommand("WaitFull", Commands.waitUntil(() -> !mouth.m_limitSwitch.get()));
-        // NamedCommands.registerCommand("NoStop", mouth.run(() -> {
-        //     System.out.println("stop");
-        // }));
+        NamedCommands.registerCommand("L4", elevator.toL4().alongWith(new PrintCommand("L4")));
+        NamedCommands.registerCommand("In", elevator.toIn().alongWith(new PrintCommand("In")));
+        NamedCommands.registerCommand("Get", mouth.setSpeed(8).alongWith(new PrintCommand("Get")));
+        NamedCommands.registerCommand("Put",
+                mouth.setSpeed(25)
+                        .alongWith(new PrintCommand("Put")));
+        NamedCommands.registerCommand("LeftReef",
+                mouth.runOnce(() -> mouth.setLeft(() -> drivetrain.getState().Pose)).withTimeout(0.5));
+        NamedCommands.registerCommand("RightReef",
+                mouth.runOnce(() -> mouth.setRight(() -> drivetrain.getState().Pose)).withTimeout(0.5)
+                        .andThen(new PrintCommand("end reef")));
+        NamedCommands.registerCommand("Back", mouth.setSpeed(-4));
+        NamedCommands.registerCommand("zhong",
+                mouth.runOnce(() -> mouth.setPosition(0)).withTimeout(0.8));
+        NamedCommands.registerCommand("WaitFull",
+                Commands.waitSeconds(1).andThen(new PrintCommand("end wait")).alongWith(new PrintCommand("Wait")));
+        NamedCommands.registerCommand("NoStop", mouth.run(() -> {
+            System.out.println("stop");
+        }));
     }
 
     public Command getAutonomousCommand() {

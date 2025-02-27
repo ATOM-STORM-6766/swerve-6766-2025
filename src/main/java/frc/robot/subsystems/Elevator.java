@@ -60,6 +60,7 @@ public class Elevator extends SubsystemBase {
      */
     public void setPosition(double position) {
         // 限制在有效范围内
+        Light.getInstance().moveElevator();
         m_targetPosition = position;
         m_motor1.setControl(m_positionRequest.withPosition(position));
     }
@@ -75,47 +76,57 @@ public class Elevator extends SubsystemBase {
 
     public Command toL1() {
         return new FunctionalCommand(
-            () -> setPosition(1.18), // 初始化：设置目标位置
-            () -> {}, // 执行：无需额外操作
-            interrupted -> {}, // 结束：无需额外操作
-            this::isAtPosition, // 结束条件：到达目标位置
-            this); // 需求：电梯子系统
+                () -> setPosition(1.18), // 初始化：设置目标位置
+                () -> {
+                }, // 执行：无需额外操作
+                interrupted -> {
+                }, // 结束：无需额外操作
+                this::isAtPosition, // 结束条件：到达目标位置
+                this); // 需求：电梯子系统
     }
 
     public Command toIn() {
         return new FunctionalCommand(
-            () -> setPosition(1.2),
-            () -> {},
-            interrupted -> {},
-            this::isAtPosition,
-            this);
+                () -> setPosition(1.2),
+                () -> {
+                },
+                interrupted -> {
+                },
+                this::isAtPosition,
+                this);
     }
 
     public Command toL2() {
         return new FunctionalCommand(
-            () -> setPosition(2.167),
-            () -> {},
-            interrupted -> {},
-            this::isAtPosition,
-            this);
+                () -> setPosition(2.167),
+                () -> {
+                },
+                interrupted -> {
+                },
+                this::isAtPosition,
+                this);
     }
 
     public Command toL3() {
         return new FunctionalCommand(
-            () -> setPosition(3.856),
-            () -> {},
-            interrupted -> {},
-            this::isAtPosition,
-            this);
+                () -> setPosition(3.856),
+                () -> {
+                },
+                interrupted -> {
+                },
+                this::isAtPosition,
+                this);
     }
 
     public Command toL4() {
         return new FunctionalCommand(
-            () -> setPosition(6.725),
-            () -> {},
-            interrupted -> {},
-            this::isAtPosition,
-            this);
+                () -> setPosition(6.725),
+                () -> {
+                },
+                interrupted -> {
+                },
+                this::isAtPosition,
+                this);
     }
 
     /**
@@ -133,7 +144,11 @@ public class Elevator extends SubsystemBase {
      * @return 是否到达
      */
     public boolean isAtPosition() {
-        return Math.abs(getPosition() - m_targetPosition) < 0.03;
+        if (Math.abs(getPosition() - m_targetPosition) < 0.13) {
+            Light.getInstance().moveElevatorStop();
+            return true;
+        }
+        return false;
     }
 
     /**

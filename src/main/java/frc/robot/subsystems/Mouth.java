@@ -80,7 +80,8 @@ public class Mouth extends SubsystemBase {
         // 将电机位置设置为编码器位置
         syncMotorPosition();
         m_hornMotor.setPosition(1.48);
-        m_hornMotor.set(-0.015);
+
+        m_hornMotor.set(0.015);
     }
 
     /**
@@ -136,7 +137,7 @@ public class Mouth extends SubsystemBase {
      * @param speed 速度（-1.0 到 1.0）
      */
     public Command setSpeed(double speed) {
-        return run(() -> m_driveMotor.setControl(m_voltageOutRequest.withVelocity(speed)));
+        return Commands.runOnce(() -> m_driveMotor.setControl(m_voltageOutRequest.withVelocity(speed)));
     }
 
     /**
@@ -161,7 +162,7 @@ public class Mouth extends SubsystemBase {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr.get());
         drivePose.set(t.getTranslation());
         Rotation2d position = t.getTranslation().getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI+15;
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
         setPosition(x / 360);
     }
 
@@ -169,7 +170,7 @@ public class Mouth extends SubsystemBase {
         Rotation2d position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr.get())
                 .getTranslation()
                 .getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI+15;
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
         setPosition(x / 360);
     }
 
@@ -186,13 +187,13 @@ public class Mouth extends SubsystemBase {
      * 急停命令
      */
     public Command stopDrive() {
-        return runOnce(() -> {
+        return Commands.runOnce(() -> {
             double currentSpeed = m_driveMotor.getVelocity().getValueAsDouble();
             m_driveMotor.setControl(m_voltageOutRequest.withVelocity(-currentSpeed * 0.65));
             System.out.println(-currentSpeed * 0.65);
         })
                 .andThen(Commands.waitSeconds(0.05))
-                .andThen(setSpeed(0).withTimeout(0)); // 最后设置为0
+                .andThen(setSpeed(0).withTimeout(0.1)); // 最后设置为0
     }
 
     /**

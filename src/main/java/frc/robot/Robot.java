@@ -58,13 +58,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        System.out.println("jing");
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        System.out.println("de");
         if (m_autonomousCommand != null) {
-            System.out.println("yun");
             m_autonomousCommand.schedule();
-            System.out.println("jieshu");
         }
     }
 

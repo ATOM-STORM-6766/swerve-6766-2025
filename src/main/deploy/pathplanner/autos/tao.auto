@@ -5,27 +5,265 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "In"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Temp"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "lower start to left lower"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "RightReef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Put"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.35
+                }
+              },
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "right lower to lower station"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "In"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "zhong"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Get"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitFull"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "back left lower"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Back"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "RightReef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Put"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.35
+                }
+              },
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "left lower to lower station"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "In"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "zhong"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Get"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitFull"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "back left lower"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Back"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "LeftReef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Put"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.35
+                }
+              },
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "left lower to lower station"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "In"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "zhong"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       ]

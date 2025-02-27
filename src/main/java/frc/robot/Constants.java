@@ -560,7 +560,7 @@ public class Constants {
         public static final TalonFXConfiguration driveConfigs = new TalonFXConfiguration()
                 .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(new CurrentLimitsConfigs()
-                        .withStatorCurrentLimit(60)
+                        .withStatorCurrentLimit(80)
                         .withStatorCurrentLimitEnable(true))
                 .withSlot0(new Slot0Configs()
                         .withKP(0.1) // 位置环增益

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -12,6 +14,7 @@ import frc.robot.Constants;
 
 public class Light extends SubsystemBase {
     private static Light light;
+    public Supplier<Double> speed = () -> 0.0;
 
     public static Light getInstance() {
         if (light == null) {
@@ -23,6 +26,7 @@ public class Light extends SubsystemBase {
     private AddressableLED m_led = new AddressableLED(0);
     private AddressableLEDBuffer m_blackLedBuffer;
     private AddressableLEDBuffer m_LedBuffer;
+    private AddressableLEDBuffer m_LedRainBuffer;
     private AddressableLEDBuffer m_buffer;
     private Notifier m_notifier;
 
@@ -30,11 +34,20 @@ public class Light extends SubsystemBase {
         m_led.setLength(60);
         m_blackLedBuffer = new AddressableLEDBuffer(60);
         m_LedBuffer = new AddressableLEDBuffer(60);
+        m_LedRainBuffer = new AddressableLEDBuffer(60);
+        m_LedRainBuffer.forEach((i, r, g, b) -> {
+            m_LedRainBuffer.setHSV(i, (int) (i * 180.0 / m_LedRainBuffer.getLength()), 255, 128);
+        });
         m_led.start();
         m_notifier = new Notifier(() -> {
         });
         setStart();
         m_notifier.setName("FlashingLight");
+
+        // setDefaultCommand(run(() -> {
+        //     if (DriverStation.isEnabled())
+        //         setRainbow();
+        // }));
     }
 
     public void setStart() {
@@ -43,20 +56,32 @@ public class Light extends SubsystemBase {
                     Constants.alliance == Alliance.Red ? Color.kRed : Color.kBlue// Color.kWhite//
             );
         });
-        m_led.setData(m_LedBuffer);
+        m_buffer = m_LedBuffer;
+        m_notifier.setCallback(() -> {
+            if (m_buffer == m_LedBuffer)
+                m_buffer = m_blackLedBuffer;
+            else
+                m_buffer = m_LedBuffer;
+            m_led.setData(m_buffer);
+        });
+        m_notifier.startPeriodic(0.1);
+    }
+
+    public void isReady() {
+        m_led.setData(m_buffer);
     }
 
     public void setRainbow() {
-        m_LedBuffer.forEach((i, r, g, b) -> {
-            m_LedBuffer.setHSV(i, (int) (i * 180.0 / m_LedBuffer.getLength()), 255, 128);
-        });
-        m_notifier.setCallback(() -> {
-            m_LedBuffer.forEach((i, r, g, b) -> {
-                m_LedBuffer.setLED(i, m_LedBuffer.getLED((i + 1) % m_LedBuffer.getLength()));
+        if (speed.get() > 0.1) {
+            m_notifier.setCallback(() -> {
+                m_LedRainBuffer.forEach((i, r, g, b) -> {
+                    m_LedRainBuffer.setLED(i, m_LedRainBuffer.getLED((i + 1) % m_LedRainBuffer.getLength()));
+                });
+                m_led.setData(m_LedRainBuffer);
             });
-            m_led.setData(m_LedBuffer);
-        });
-        m_notifier.startPeriodic(0.0083);// 0.04166);
+            m_notifier.startPeriodic(1 / (30 + speed.get() * 90));
+        } else
+            m_led.setData(m_LedRainBuffer);
     }
 
     public void setBlack() {
@@ -75,7 +100,7 @@ public class Light extends SubsystemBase {
                 m_buffer = m_LedBuffer;
             m_led.setData(m_buffer);
         });
-        m_notifier.startPeriodic(0.3);
+        m_notifier.startPeriodic(0.1);
     }
 
     public void autoMovingStop() {
@@ -95,7 +120,7 @@ public class Light extends SubsystemBase {
                 m_buffer = m_LedBuffer;
             m_led.setData(m_buffer);
         });
-        m_notifier.startPeriodic(0.3);
+        m_notifier.startPeriodic(0.1);
     }
 
     public void moveElevatorStop() {
@@ -115,7 +140,7 @@ public class Light extends SubsystemBase {
                 m_buffer = m_LedBuffer;
             m_led.setData(m_buffer);
         });
-        m_notifier.startPeriodic(0.3);
+        m_notifier.startPeriodic(0.1);
     }
 
     public void fullMouth() {

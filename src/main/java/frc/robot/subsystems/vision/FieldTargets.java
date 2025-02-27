@@ -98,7 +98,7 @@ public class FieldTargets {
         return nearestTarget.pose;
     }
 
-    public Pose3d getNearestStation(Pose3d currentPose) {
+    public Pose3d getNearestStation(Pose2d currentPose) {
         if (currentPose.getY() > aprilTagLayout.getFieldWidth() / 2) {
             return station.rightTag.pose;
         } else {
