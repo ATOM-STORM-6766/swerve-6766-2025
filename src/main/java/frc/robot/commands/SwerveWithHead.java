@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.vision.FieldTargets;
 import frc.robot.Constants;
 import frc.robot.Constants.SwerveConstants;
 
@@ -21,8 +20,6 @@ import frc.robot.Constants.SwerveConstants;
 public class SwerveWithHead extends Command {
     private final Swerve m_swerveDrivetrain;
     private final XboxController m_controller;
-    private final FieldTargets target = Constants.targets;
-
     // 最大速度和角速度
 
     // 场地中心控制请求：用于自由控制机器人的移动和旋转
@@ -52,16 +49,9 @@ public class SwerveWithHead extends Command {
     public void execute() {
         Rotation2d angle = Rotation2d.fromDegrees(m_controller.getPOV());
 
-        if (m_swerveDrivetrain.getState().Pose.getTranslation().getDistance(target.reef.getTranslation()) < 1.5)
-            // 根据控制模式设置底盘运动
-            m_swerveDrivetrain.setControl(
-                    facingAngle.withVelocityX(0.2 * angle.getCos())
-                            .withVelocityY(-0.2 * angle.getSin())
-                            .withTargetDirection(target.reef.pose.getRotation().toRotation2d()));
-        else
-            m_swerveDrivetrain.setControl(
-                    robotCentric.withVelocityX(0.2 * angle.getCos())
-                            .withVelocityY(-0.2 * angle.getSin()));
+        m_swerveDrivetrain.setControl(
+                robotCentric.withVelocityX(0.2 * angle.getCos())
+                        .withVelocityY(-0.2 * angle.getSin()));
 
     }
 }
