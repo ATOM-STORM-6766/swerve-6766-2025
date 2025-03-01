@@ -223,7 +223,7 @@ public class Constants {
         public static final double kMaxAngle = 0.25; // 最大角度（0.25转 = 90度）
 
         // Through Bore Encoder配置
-        public static final double kEncoderOffset = 0.8649453425872388;
+        public static final double kEncoderOffset = 0.13413101562500007;
 
         // 驱动电机配置
         public static final TalonFXConfiguration driveConfigs = new TalonFXConfiguration()

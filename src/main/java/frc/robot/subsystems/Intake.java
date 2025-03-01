@@ -38,8 +38,7 @@ public class Intake extends SubsystemBase {
         m_positionMotor.getConfigurator().apply(IntakeConstants.positionConfigs);
 
         // 初始化编码器
-        m_encoder = new DutyCycleEncoder(IntakeConstants.kEncoderChannel, 1, -0.236083984375-0.242822);// -IntakeConstants.kEncoderOffset);//
-                                                                                              // +0.1127504062166605
+        m_encoder = new DutyCycleEncoder(IntakeConstants.kEncoderChannel, 1, IntakeConstants.kEncoderOffset);
         m_encoder.setInverted(true);
 
         // 将电机位置设置为编码器位置
@@ -59,17 +58,17 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         // 检查编码器和电机位置的差异
         double encoderPos = m_encoder.get();
-        double motorPos = m_positionMotor.getPosition().getValueAsDouble();
+        // double motorPos = m_positionMotor.getPosition().getValueAsDouble();
 
         // 添加遥测数据
         SmartDashboard.putNumber("Intake/EncoderPosition", encoderPos);
-        SmartDashboard.putNumber("Intake/MotorPosition", motorPos);
-        SmartDashboard.putNumber("Intake/TargetPosition", m_targetPosition);
-        SmartDashboard.putNumber("Intake/PositionError", m_targetPosition - encoderPos);
+        // SmartDashboard.putNumber("Intake/MotorPosition", motorPos);
+        // SmartDashboard.putNumber("Intake/TargetPosition", m_targetPosition);
+        // SmartDashboard.putNumber("Intake/PositionError", m_targetPosition - encoderPos);
         SmartDashboard.putBoolean("Intake/AtPosition", isAtPosition());
-        SmartDashboard.putNumber("Intake/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Intake/Velocity", m_positionMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Intake/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Intake/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Intake/Velocity", m_positionMotor.getVelocity().getValueAsDouble());
+        // SmartDashboard.putNumber("Intake/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
     }
 
     /**

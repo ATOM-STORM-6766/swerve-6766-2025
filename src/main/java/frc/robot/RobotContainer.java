@@ -193,7 +193,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("zhong",
                 mouth.runOnce(() -> mouth.setPosition(0)).withTimeout(0.8));
         NamedCommands.registerCommand("WaitFull",
-                Commands.waitSeconds(1).andThen(new PrintCommand("end wait")).alongWith(new PrintCommand("Wait")));
+                Commands.waitSeconds(2).andThen(new PrintCommand("end wait")).alongWith(new PrintCommand("Wait")));
         NamedCommands.registerCommand("NoStop", mouth.run(() -> {
             System.out.println("stop");
         }));

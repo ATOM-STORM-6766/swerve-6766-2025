@@ -123,11 +123,11 @@ public class Mouth extends SubsystemBase {
 
         // 添加遥测数据
         SmartDashboard.putNumber("Mouth/EncoderPosition", encoderPos);
-        SmartDashboard.putNumber("Mouth/MotorPosition", motorPos);
-        SmartDashboard.putBoolean("Mouth/IsInitialized", m_isInitialized);
-        SmartDashboard.putNumber("Mouth/StableReadingsCount", m_stableReadingsCount);
-        SmartDashboard.putNumber("Mouth/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Mouth/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Mouth/MotorPosition", motorPos);
+        // SmartDashboard.putBoolean("Mouth/IsInitialized", m_isInitialized);
+        // SmartDashboard.putNumber("Mouth/StableReadingsCount", m_stableReadingsCount);
+        // SmartDashboard.putNumber("Mouth/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Mouth/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
         SmartDashboard.putBoolean("Mouth/LimitSwitch", !m_limitSwitch.get());
     }
 
