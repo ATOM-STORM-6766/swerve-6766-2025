@@ -17,13 +17,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sLeftReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -35,7 +35,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -85,7 +85,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "back left lower"
+                  "pathName": "back left mid"
                 }
               },
               {
@@ -117,13 +117,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "RightReef"
+                  "name": "sLeftReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -135,7 +135,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -145,7 +145,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "left lower to lower station"
+                        "pathName": "left mid to lower station"
                       }
                     },
                     {
@@ -185,7 +185,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "back left lower"
+                  "pathName": "back left mid"
                 }
               },
               {
@@ -217,13 +217,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sRightReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -235,7 +235,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -245,7 +245,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "left lower to lower station"
+                        "pathName": "left mid to lower station"
                       }
                     },
                     {
@@ -265,11 +265,23 @@
               }
             ]
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitFull"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back left lower"
+          }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }

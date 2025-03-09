@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "lower start to left lower"
+            "pathName": "upper start to left upper"
           }
         },
         {
@@ -17,13 +17,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sLeftReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -35,7 +35,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -45,7 +45,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "right lower to lower station"
+                        "pathName": "right upper to upper station"
                       }
                     },
                     {
@@ -85,7 +85,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "back left lower"
+                  "pathName": "back left upper"
                 }
               },
               {
@@ -117,13 +117,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "RightReef"
+                  "name": "sLeftReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -135,7 +135,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -145,7 +145,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "left lower to lower station"
+                        "pathName": "left mid to upper station"
                       }
                     },
                     {
@@ -185,7 +185,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "back left lower"
+                  "pathName": "back left upper"
                 }
               },
               {
@@ -217,13 +217,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sRightReef"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4"
+                  "name": "L2"
                 }
               },
               {
@@ -235,7 +235,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.8
                 }
               },
               {
@@ -245,7 +245,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "left lower to lower station"
+                        "pathName": "left mid to upper station"
                       }
                     },
                     {
@@ -264,12 +264,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitFull"
           }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }

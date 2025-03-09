@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -28,18 +29,12 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class Mouth extends SubsystemBase {
-
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable driveStateTable = inst.getTable("Vision");
-    private final StructPublisher<Translation2d> drivePose = driveStateTable
-            .getStructTopic("Mouth", Translation2d.struct)
-            .publish();
-
     // 硬件设备
     private final TalonFX m_positionMotor;
     private final TalonFX m_driveMotor;
     private final TalonFX m_hornMotor;
     private final DutyCycleEncoder m_encoder;
+    private final Swerve m_swerve;
     public final DigitalInput m_limitSwitch = new DigitalInput(2);
 
     // 控制请求
@@ -60,7 +55,9 @@ public class Mouth extends SubsystemBase {
     /**
      * 构造函数
      */
-    public Mouth() {
+    public Mouth(Swerve m_swerve) {
+        this.m_swerve = m_swerve;
+
         // 初始化电机
         m_positionMotor = new TalonFX(MouthConstants.kMouthPositionMotorId);
         m_driveMotor = new TalonFX(MouthConstants.kMouthDriverMotorId);
@@ -79,9 +76,12 @@ public class Mouth extends SubsystemBase {
 
         // 将电机位置设置为编码器位置
         syncMotorPosition();
-        m_hornMotor.setPosition(1.48);
+        m_hornMotor.setPosition(1.45);
 
-        m_hornMotor.set(0.015);
+        m_hornMotor.set(0.15);
+
+        // m_hornMotor.set(0.015);
+        SmartDashboard.putBoolean("Mouth/isGet", true);
     }
 
     /**
@@ -126,8 +126,10 @@ public class Mouth extends SubsystemBase {
         // SmartDashboard.putNumber("Mouth/MotorPosition", motorPos);
         // SmartDashboard.putBoolean("Mouth/IsInitialized", m_isInitialized);
         // SmartDashboard.putNumber("Mouth/StableReadingsCount", m_stableReadingsCount);
-        // SmartDashboard.putNumber("Mouth/StatorCurrent", m_positionMotor.getStatorCurrent().getValueAsDouble());
-        // SmartDashboard.putNumber("Mouth/TorqueCurrent", m_positionMotor.getTorqueCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Mouth/StatorCurrent",
+        // m_positionMotor.getStatorCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Mouth/TorqueCurrent",
+        // m_positionMotor.getTorqueCurrent().getValueAsDouble());
         SmartDashboard.putBoolean("Mouth/LimitSwitch", !m_limitSwitch.get());
     }
 
@@ -160,7 +162,6 @@ public class Mouth extends SubsystemBase {
 
     public void setLeft(Supplier<Pose2d> curr) {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr.get());
-        drivePose.set(t.getTranslation());
         Rotation2d position = t.getTranslation().getAngle();
         double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
         setPosition(x / 360);
@@ -174,6 +175,24 @@ public class Mouth extends SubsystemBase {
         setPosition(x / 360);
     }
 
+    public void setLeft() {
+        Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(m_swerve.getState().Pose);
+        Rotation2d position = t.getTranslation().getAngle();
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
+        setPosition(x / 360);
+        SmartDashboard.putNumber("Mouth/tr", x);
+    }
+
+    public void setRight() {
+        Rotation2d position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip)
+                .relativeTo(m_swerve.getState().Pose)
+                .getTranslation()
+                .getAngle();
+        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
+        setPosition(x / 360);
+        SmartDashboard.putNumber("Mouth/tr", x);
+    }
+
     /**
      * 获取当前位置
      * 
@@ -181,6 +200,22 @@ public class Mouth extends SubsystemBase {
      */
     public double getPosition() {
         return m_encoder.get();
+    }
+
+    public Command getHorn() {
+        return Commands.runOnce(() -> {
+            m_hornMotor.setControl(new VoltageOut(12 * 0.08));
+            System.out.println("get");
+            SmartDashboard.putBoolean("Mouth/isGet", true);
+        });
+    }
+
+    public Command putHorn() {
+        return Commands.runOnce(() -> {
+            m_hornMotor.setControl(new VoltageOut(12 * -0.15));
+            System.out.println("put");
+            SmartDashboard.putBoolean("Mouth/isGet", false);
+        });
     }
 
     /**

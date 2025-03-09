@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.controls.Follower;
@@ -46,11 +47,15 @@ public class Elevator extends SubsystemBase {
         // double currentPos = getPosition();
         // SmartDashboard.putNumber("Elevator/Position", currentPos);
         // SmartDashboard.putNumber("Elevator/TargetPosition", m_targetPosition);
-        // SmartDashboard.putNumber("Elevator/PositionError", m_targetPosition - currentPos);
+        // SmartDashboard.putNumber("Elevator/PositionError", m_targetPosition -
+        // currentPos);
         SmartDashboard.putBoolean("Elevator/AtPosition", isAtPosition());
-        // SmartDashboard.putNumber("Elevator/Motor1Current", m_motor1.getStatorCurrent().getValueAsDouble());
-        // SmartDashboard.putNumber("Elevator/Motor2Current", m_motor2.getStatorCurrent().getValueAsDouble());
-        // SmartDashboard.putNumber("Elevator/Velocity", m_motor1.getVelocity().getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator/Motor1Current",
+        // m_motor1.getStatorCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator/Motor2Current",
+        // m_motor2.getStatorCurrent().getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator/Velocity",
+        // m_motor1.getVelocity().getValueAsDouble());
     }
 
     /**
@@ -63,6 +68,16 @@ public class Elevator extends SubsystemBase {
         Light.getInstance().moveElevator();
         m_targetPosition = position;
         m_motor1.setControl(m_positionRequest.withPosition(position));
+    }
+
+    public void reset() {
+        m_motor1.setPosition(-0.04544);
+        m_motor1.setNeutralMode(NeutralModeValue.Brake);
+    }
+
+    public void setVoltage() {
+        m_motor1.setControl(new VoltageOut(-2));
+        m_motor1.setNeutralMode(NeutralModeValue.Coast);
     }
 
     /*
@@ -144,7 +159,7 @@ public class Elevator extends SubsystemBase {
      * @return 是否到达
      */
     public boolean isAtPosition() {
-        if (Math.abs(getPosition() - m_targetPosition) < 0.18) {
+        if (Math.abs(getPosition() - m_targetPosition) < 0.13) {
             Light.getInstance().moveElevatorStop();
             return true;
         }

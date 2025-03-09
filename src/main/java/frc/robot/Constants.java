@@ -296,7 +296,7 @@ public class Constants {
                 .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
                         .withForwardSoftLimitEnable(true)
                         .withForwardSoftLimitThreshold(kMaxHeight)
-                        .withReverseSoftLimitEnable(true)
+                        .withReverseSoftLimitEnable(false)
                         .withReverseSoftLimitThreshold(0.01))
                 .withFeedback(new FeedbackConfigs()
                         .withSensorToMechanismRatio(kGearRatio));
@@ -578,7 +578,7 @@ public class Constants {
                         .withStatorCurrentLimitEnable(true))
                 .withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs()
                         .withForwardSoftLimitEnable(true)
-                        .withForwardSoftLimitThreshold(1.48)
+                        .withForwardSoftLimitThreshold(1.45)
                         .withReverseSoftLimitEnable(true)
                         .withReverseSoftLimitThreshold(0));
     }

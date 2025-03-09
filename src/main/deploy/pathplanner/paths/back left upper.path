@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.167047512990036,
-        "y": 7.057796884106796
+        "x": 1.0894132653061226,
+        "y": 7.155197704081632
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7897908846507935,
-        "y": 6.599323730620683
+        "x": 1.7087372448979594,
+        "y": 6.826881377551021
       },
       "isLocked": false,
       "linkedName": "上站"
     },
     {
       "anchor": {
-        "x": 3.8272605127788024,
-        "y": 5.124641007185696
+        "x": 3.2160076530612245,
+        "y": 3.9690369897959177
       },
       "prevControl": {
-        "x": 3.2107539835896026,
-        "y": 5.576803982746377
+        "x": 2.984430605498088,
+        "y": 4.472824752563209
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "左上"
+      "linkedName": "左中"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

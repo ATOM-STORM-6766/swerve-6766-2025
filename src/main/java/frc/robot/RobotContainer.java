@@ -53,7 +53,7 @@ public class RobotContainer {
             SwerveConstants.BackRight);
     public final Intake intake = new Intake();
     public final Elevator elevator = new Elevator();
-    public final Mouth mouth = new Mouth();
+    public final Mouth mouth = new Mouth(drivetrain);
     public final Climber climber = new Climber();
     public final Vision vision;
 
@@ -120,6 +120,9 @@ public class RobotContainer {
                         .plus(new Transform2d(0.35, 0, Rotation2d.kZero))));
         joystick1.povCenter().whileFalse(new SwerveWithHead(drivetrain, joystick1.getHID()));
 
+        joystick1.back().onTrue(elevator.runOnce(() -> elevator.setVoltage()))
+                .onFalse(elevator.runOnce(() -> elevator.reset()));
+
         // Intake控制
         // 右扳机控制进料速度（0-100%）
         joystick2.rightTrigger().whileTrue(
@@ -149,7 +152,7 @@ public class RobotContainer {
         joystick2.a().onTrue(elevator.stop());
 
         // 嘴控制
-        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(25))// Commands.print("T"))//
+        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(20))// Commands.print("T"))//
                 .onFalse(mouth.setSpeed(0)); // 吐 //Commands.print("F"));//
 
         joystick2.y().and(() -> mouth.m_limitSwitch.get())
@@ -157,43 +160,55 @@ public class RobotContainer {
                 .onFalse(mouth.setSpeed(0)); // 吐
 
         joystick2.start().onTrue(mouth.setSpeed(-8)).onFalse(mouth.setSpeed(0));
+        joystick2.back().onTrue(mouth.getHorn());
+        joystick2.rightStick().onTrue(mouth.putHorn());
 
         joystick2.b().onTrue(mouth.setSpeed(50)).onFalse(mouth.setSpeed(0));
 
         mouth.m_limitSwitchTrigger.toggleOnFalse(mouth.stopDrive());
-
-        joystick2.leftBumper().whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))// mouth.setLeft(drivetrain.getState().Pose)))//
+        joystick2.axisLessThan(4, -0.9)
+                .whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))// mouth.setLeft(drivetrain.getState().Pose)))//
                 .onFalse(mouth.runOnce(() -> mouth.stop())); // 收起
 
-        joystick2.rightBumper().whileTrue(mouth.run(() -> mouth.setPosition(0.2)))// mouth.setRight(drivetrain.getState().Pose)))
+        joystick2.axisGreaterThan(4, 0.9)
+                .whileTrue(mouth.run(() -> mouth.setPosition(0.2)))// mouth.setRight(drivetrain.getState().Pose)))
                 .onFalse(mouth.runOnce(() -> mouth.stop()));// 展开
 
-        joystick2.axisLessThan(4, -0.9)
+        joystick2.leftBumper()
                 .whileTrue(mouth.run(() -> mouth.setLeft(() -> drivetrain.getState().Pose)))
                 .onFalse(mouth.runOnce(() -> mouth.stop()));
-        joystick2.axisGreaterThan(4, 0.9)
+        joystick2.rightBumper()
                 .whileTrue(mouth.run(() -> mouth.setRight(() -> drivetrain.getState().Pose)))
                 .onFalse(mouth.runOnce(() -> mouth.stop()));
     }
 
     private void configureAuto() {
         NamedCommands.registerCommand("Temp", new PrintCommand("Temp"));
+        NamedCommands.registerCommand("L2", elevator.toL2().alongWith(new PrintCommand("L2")));
         NamedCommands.registerCommand("L4", elevator.toL4().alongWith(new PrintCommand("L4")));
         NamedCommands.registerCommand("In", elevator.toIn().alongWith(new PrintCommand("In")));
         NamedCommands.registerCommand("Get", mouth.setSpeed(8).alongWith(new PrintCommand("Get")));
         NamedCommands.registerCommand("Put",
-                mouth.setSpeed(25)
+                mouth.setSpeed(28)
                         .alongWith(new PrintCommand("Put")));
         NamedCommands.registerCommand("LeftReef",
-                mouth.runOnce(() -> mouth.setLeft(() -> drivetrain.getState().Pose)).withTimeout(0.5));
+                mouth.run(() -> mouth.setLeft()));
+
+
         NamedCommands.registerCommand("RightReef",
-                mouth.runOnce(() -> mouth.setRight(() -> drivetrain.getState().Pose)).withTimeout(0.5)
+                mouth.run(() -> mouth.setRight())
                         .andThen(new PrintCommand("end reef")));
+
+        NamedCommands.registerCommand("sLeftReef",
+                mouth.runOnce(() -> mouth.setPosition(0.2)).withTimeout(0.5));
+        NamedCommands.registerCommand("sRightReef",
+                mouth.runOnce(() -> mouth.setPosition(-0.25)).withTimeout(0.5));
+
         NamedCommands.registerCommand("Back", mouth.setSpeed(-4));
         NamedCommands.registerCommand("zhong",
                 mouth.runOnce(() -> mouth.setPosition(0)).withTimeout(0.8));
         NamedCommands.registerCommand("WaitFull",
-                Commands.waitSeconds(2).andThen(new PrintCommand("end wait")).alongWith(new PrintCommand("Wait")));
+                Commands.waitSeconds(1.5).andThen(new PrintCommand("end wait")).alongWith(new PrintCommand("Wait")));
         NamedCommands.registerCommand("NoStop", mouth.run(() -> {
             System.out.println("stop");
         }));

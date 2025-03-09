@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.148341836734694,
-        "y": 6.155325255102041
+        "x": 5.126211734693879,
+        "y": 5.125605867346938
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.010294024234181,
-        "y": 5.849548837389563
+        "x": 5.208290816326532,
+        "y": 5.901626275510203
       },
       "isLocked": false,
-      "linkedName": "上启"
+      "linkedName": "右上"
     },
     {
       "anchor": {
-        "x": 5.119,
-        "y": 5.125605867346938
+        "x": 1.0894132653061226,
+        "y": 7.155197704081632
       },
       "prevControl": {
-        "x": 6.036222827318863,
-        "y": 5.686275678854714
+        "x": 1.4273070397655754,
+        "y": 6.926450296165777
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "右上"
+      "linkedName": "上站"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.74488129694218
+    "rotation": -52.948365135156834
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -119.74488129694218
   },
   "useDefaultConstraints": true
 }
