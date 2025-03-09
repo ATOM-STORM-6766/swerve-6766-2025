@@ -28,7 +28,7 @@ import frc.robot.subsystems.vision.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Light;
-import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Mouth;
 
@@ -54,7 +54,7 @@ public class RobotContainer {
     public final Intake intake = new Intake();
     public final Elevator elevator = new Elevator();
     public final Mouth mouth = new Mouth(drivetrain);
-    public final Climber climber = new Climber();
+//     public final Climber climber = new Climber();
     public final Vision vision;
 
     /* Path follower */
