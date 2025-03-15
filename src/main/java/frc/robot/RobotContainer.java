@@ -9,8 +9,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -54,7 +52,7 @@ public class RobotContainer {
     public final Intake intake = new Intake();
     public final Elevator elevator = new Elevator();
     public final Mouth mouth = new Mouth(drivetrain);
-//     public final Climber climber = new Climber();
+    // public final Climber climber = new Climber();
     public final Vision vision;
 
     /* Path follower */
@@ -113,7 +111,7 @@ public class RobotContainer {
 
         joystick1.a().whileTrue(new AutoTargetCommand(
                 () -> Constants.targets.reef.pose.toPose2d()
-                        .plus(new Transform2d(0.53, 0, Rotation2d.k180deg))));
+                        .plus(new Transform2d(0.25, 0, Rotation2d.k180deg))));
 
         joystick1.b().whileTrue(new AutoTargetCommand(
                 () -> Constants.targets.getNearestStation(drivetrain.getState().Pose).toPose2d()
@@ -152,7 +150,7 @@ public class RobotContainer {
         joystick2.a().onTrue(elevator.stop());
 
         // 嘴控制
-        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(20))// Commands.print("T"))//
+        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(16))// Commands.print("T"))//
                 .onFalse(mouth.setSpeed(0)); // 吐 //Commands.print("F"));//
 
         joystick2.y().and(() -> mouth.m_limitSwitch.get())
@@ -166,6 +164,8 @@ public class RobotContainer {
         joystick2.b().onTrue(mouth.setSpeed(50)).onFalse(mouth.setSpeed(0));
 
         mouth.m_limitSwitchTrigger.toggleOnFalse(mouth.stopDrive());
+                //.alongWith(elevator.toL2().onlyIf(() -> Math.abs(elevator.getPosition() - 0.59) < 0.2)));
+
         joystick2.axisLessThan(4, -0.9)
                 .whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))// mouth.setLeft(drivetrain.getState().Pose)))//
                 .onFalse(mouth.runOnce(() -> mouth.stop())); // 收起
@@ -183,21 +183,22 @@ public class RobotContainer {
     }
 
     private void configureAuto() {
-        NamedCommands.registerCommand("Temp", new PrintCommand("Temp"));
+        NamedCommands.registerCommand("Temp", Commands.runOnce(() -> {
+            // 手动断点
+            System.out.println("Manual breakpoint reached");
+        }));
         NamedCommands.registerCommand("L2", elevator.toL2().alongWith(new PrintCommand("L2")));
         NamedCommands.registerCommand("L4", elevator.toL4().alongWith(new PrintCommand("L4")));
         NamedCommands.registerCommand("In", elevator.toIn().alongWith(new PrintCommand("In")));
         NamedCommands.registerCommand("Get", mouth.setSpeed(8).alongWith(new PrintCommand("Get")));
         NamedCommands.registerCommand("Put",
-                mouth.setSpeed(28)
+                mouth.setSpeed(22)
                         .alongWith(new PrintCommand("Put")));
         NamedCommands.registerCommand("LeftReef",
                 mouth.run(() -> mouth.setLeft()));
 
-
         NamedCommands.registerCommand("RightReef",
-                mouth.run(() -> mouth.setRight())
-                        .andThen(new PrintCommand("end reef")));
+                mouth.run(() -> mouth.setRight()));
 
         NamedCommands.registerCommand("sLeftReef",
                 mouth.runOnce(() -> mouth.setPosition(0.2)).withTimeout(0.5));

@@ -17,7 +17,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sLeftReef"
                 }
               },
               {
@@ -117,7 +117,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "RightReef"
+                  "name": "sRightReef"
                 }
               },
               {
@@ -217,7 +217,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "LeftReef"
+                  "name": "sRightReef"
                 }
               },
               {

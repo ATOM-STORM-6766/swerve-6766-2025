@@ -1,0 +1,145 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.128652715993813,
+        "y": 1.9112364911962072
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.157730359021954,
+        "y": 2.239480636608687
+      },
+      "isLocked": false,
+      "linkedName": "下启"
+    },
+    {
+      "anchor": {
+        "x": 5.126211734693879,
+        "y": 2.8945471938775507
+      },
+      "prevControl": {
+        "x": 5.376207825348881,
+        "y": 2.8931491033167647
+      },
+      "nextControl": {
+        "x": 4.876215644038877,
+        "y": 2.8959452844383367
+      },
+      "isLocked": false,
+      "linkedName": "右下"
+    },
+    {
+      "anchor": {
+        "x": 1.0521045918367349,
+        "y": 0.8649553571428567
+      },
+      "prevControl": {
+        "x": 2.2186195868531016,
+        "y": 1.374185232425897
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "下站"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 121.27770286686645
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.7617449664429523,
+      "maxWaypointRelativePos": 1.1711409395973185,
+      "constraints": {
+        "maxVelocity": 0.5,
+        "maxAcceleration": 3.9,
+        "maxAngularVelocity": 282.996,
+        "maxAngularAcceleration": 1038.0,
+        "nominalVoltage": 11.5,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "temp",
+      "waypointRelativePos": 0.9295302013422821,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "LeftReef"
+              }
+            },
+            {
+              "type": "sequential",
+              "data": {
+                "commands": [
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "L4"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "Put"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "In"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "zhong"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Temp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.3,
+    "maxAcceleration": 3.9,
+    "maxAngularVelocity": 282.996,
+    "maxAngularAcceleration": 1038.0,
+    "nominalVoltage": 11.5,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 54.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

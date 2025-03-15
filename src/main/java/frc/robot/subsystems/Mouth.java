@@ -178,7 +178,13 @@ public class Mouth extends SubsystemBase {
     public void setLeft() {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(m_swerve.getState().Pose);
         Rotation2d position = t.getTranslation().getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
+        double anlge = linkage.calculate(position.getRadians() + Math.PI / 2);
+        if (anlge == Double.NaN) {
+            setPosition(0.2);
+            SmartDashboard.putNumber("Mouth/tr", 0.2 * 360);
+            return;
+        }
+        double x = 143.28 - anlge * 180 / Math.PI + 15;
         setPosition(x / 360);
         SmartDashboard.putNumber("Mouth/tr", x);
     }
@@ -188,7 +194,14 @@ public class Mouth extends SubsystemBase {
                 .relativeTo(m_swerve.getState().Pose)
                 .getTranslation()
                 .getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
+
+        double anlge = linkage.calculate(position.getRadians() + Math.PI / 2);
+        if (anlge == Double.NaN) {
+            setPosition(-0.25);
+            SmartDashboard.putNumber("Mouth/tr", 0.2 * 360);
+            return;
+        }
+        double x = 143.28 - anlge * 180 / Math.PI + 15;
         setPosition(x / 360);
         SmartDashboard.putNumber("Mouth/tr", x);
     }
