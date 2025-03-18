@@ -25,6 +25,7 @@ public class VisionConstants {
         // 相机名称，必须与协处理器上配置的名称匹配
         public static String camera0Name = "Arducam_OV9281_Front";// "Arducam_OV9281_USB_Camera";
         public static String camera1Name = "Arducam_OV9281_Back";
+        public static String camera2Name = "Arducam_OV9281_Left";
 
         // 机器人到相机的变换
         // (Limelight不使用此配置，请在web界面中配置)
@@ -32,6 +33,8 @@ public class VisionConstants {
                         new Rotation3d(0.0, -0.279253, 0.4715375));
         public static Transform3d robotToCamera1 = new Transform3d(-0.143012, 0.165, 1.076118,
                         new Rotation3d(0.0, -0.174533, Math.PI));
+        public static Transform3d robotToCamera2 = new Transform3d(0.322033 ,  0.312082 , 0.204634,
+                        new Rotation3d(0.0, -0.279253, -1.099557));
 
         // 基本过滤阈值
         public static double maxAmbiguity = 0.3;
@@ -46,7 +49,8 @@ public class VisionConstants {
         // (调整以使某些相机比其他相机更可信)
         public static double[] cameraStdDevFactors = new double[] {
                         1.0, // 相机 0
-                        1.0 // 相机 1
+                        1.0, // 相机 1
+                        1.0
         };
 
         // 应用于MegaTag 2观测的乘数

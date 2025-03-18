@@ -175,6 +175,6 @@ public class FourBarLinkage {
         }
 
         // 如果没有找到精确解，但有接近的解，返回最佳结果
-        return minError < tolerance * 10 ? bestTheta1 : Double.NaN;
+        return minError < tolerance * 10 ? bestTheta1 : Double.POSITIVE_INFINITY;
     }
 }

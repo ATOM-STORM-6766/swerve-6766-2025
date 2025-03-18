@@ -68,8 +68,9 @@ public class RobotContainer {
 
         if (RobotBase.isReal()) {
             vision = new Vision(drivetrain::addVisionMeasurement,
-                    new VisionIOPhotonVision(camera0Name, robotToCamera0));
-            // new VisionIOPhotonVision(camera1Name, robotToCamera1));
+                    new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                    new VisionIOPhotonVision(camera1Name, robotToCamera1),
+                    new VisionIOPhotonVision(camera2Name, robotToCamera2));
         } else {
             vision = new Vision(drivetrain::addVisionMeasurement,
                     // new VisionIOPhotonVision(camera0Name, robotToCamera0));
@@ -111,7 +112,7 @@ public class RobotContainer {
 
         joystick1.a().whileTrue(new AutoTargetCommand(
                 () -> Constants.targets.reef.pose.toPose2d()
-                        .plus(new Transform2d(0.25, 0, Rotation2d.k180deg))));
+                        .plus(new Transform2d(0.38, 0, Rotation2d.k180deg))));
 
         joystick1.b().whileTrue(new AutoTargetCommand(
                 () -> Constants.targets.getNearestStation(drivetrain.getState().Pose).toPose2d()
@@ -150,7 +151,7 @@ public class RobotContainer {
         joystick2.a().onTrue(elevator.stop());
 
         // 嘴控制
-        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(16))// Commands.print("T"))//
+        joystick2.y().and(() -> !mouth.m_limitSwitch.get()).onTrue(mouth.setSpeed(18))// Commands.print("T"))//
                 .onFalse(mouth.setSpeed(0)); // 吐 //Commands.print("F"));//
 
         joystick2.y().and(() -> mouth.m_limitSwitch.get())
@@ -164,7 +165,8 @@ public class RobotContainer {
         joystick2.b().onTrue(mouth.setSpeed(50)).onFalse(mouth.setSpeed(0));
 
         mouth.m_limitSwitchTrigger.toggleOnFalse(mouth.stopDrive());
-                //.alongWith(elevator.toL2().onlyIf(() -> Math.abs(elevator.getPosition() - 0.59) < 0.2)));
+        // .alongWith(elevator.toL2().onlyIf(() -> Math.abs(elevator.getPosition() -
+        // 0.59) < 0.2)));
 
         joystick2.axisLessThan(4, -0.9)
                 .whileTrue(mouth.run(() -> mouth.setPosition(-0.25)))// mouth.setLeft(drivetrain.getState().Pose)))//
@@ -192,13 +194,19 @@ public class RobotContainer {
         NamedCommands.registerCommand("In", elevator.toIn().alongWith(new PrintCommand("In")));
         NamedCommands.registerCommand("Get", mouth.setSpeed(8).alongWith(new PrintCommand("Get")));
         NamedCommands.registerCommand("Put",
-                mouth.setSpeed(22)
+                mouth.setSpeed(28)
                         .alongWith(new PrintCommand("Put")));
         NamedCommands.registerCommand("LeftReef",
-                mouth.run(() -> mouth.setLeft()));
+                mouth.run(() -> {
+                    mouth.setLeft();
+                    System.out.println("lr");
+                }));
 
         NamedCommands.registerCommand("RightReef",
-                mouth.run(() -> mouth.setRight()));
+                mouth.run(() -> {
+                    mouth.setRight();
+                    System.out.println("rr");
+                }));
 
         NamedCommands.registerCommand("sLeftReef",
                 mouth.runOnce(() -> mouth.setPosition(0.2)).withTimeout(0.5));

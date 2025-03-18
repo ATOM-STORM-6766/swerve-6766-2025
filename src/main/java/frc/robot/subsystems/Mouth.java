@@ -20,6 +20,7 @@ import frc.robot.subsystems.vision.FieldTargets;
 import frc.robot.util.FourBarLinkage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.filter.MedianFilter;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -46,6 +47,7 @@ public class Mouth extends SubsystemBase {
     MedianFilter filter = new MedianFilter(5);
 
     // 状态变量
+    public String state="e";
     private FieldTargets target = Constants.targets;
     private boolean m_isInitialized = false;
     private int m_stableReadingsCount = 0;
@@ -161,26 +163,19 @@ public class Mouth extends SubsystemBase {
     }
 
     public void setLeft(Supplier<Pose2d> curr) {
-        Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(curr.get());
-        Rotation2d position = t.getTranslation().getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
-        setPosition(x / 360);
+        setLeft();
     }
 
     public void setRight(Supplier<Pose2d> curr) {
-        Rotation2d position = target.reef.pose.toPose2d().transformBy(FieldTargets.rightPip).relativeTo(curr.get())
-                .getTranslation()
-                .getAngle();
-        double x = 143.28 - linkage.calculate(position.getRadians() + Math.PI / 2) * 180 / Math.PI + 15;
-        setPosition(x / 360);
+        setRight();
     }
 
     public void setLeft() {
         Pose2d t = target.reef.pose.toPose2d().transformBy(FieldTargets.leftPip).relativeTo(m_swerve.getState().Pose);
         Rotation2d position = t.getTranslation().getAngle();
         double anlge = linkage.calculate(position.getRadians() + Math.PI / 2);
-        if (anlge == Double.NaN) {
-            setPosition(0.2);
+        if (anlge == Double.POSITIVE_INFINITY) {
+            setPosition(-0.25);
             SmartDashboard.putNumber("Mouth/tr", 0.2 * 360);
             return;
         }
@@ -196,8 +191,8 @@ public class Mouth extends SubsystemBase {
                 .getAngle();
 
         double anlge = linkage.calculate(position.getRadians() + Math.PI / 2);
-        if (anlge == Double.NaN) {
-            setPosition(-0.25);
+        if (anlge == Double.POSITIVE_INFINITY) {
+            setPosition(0.2);
             SmartDashboard.putNumber("Mouth/tr", 0.2 * 360);
             return;
         }

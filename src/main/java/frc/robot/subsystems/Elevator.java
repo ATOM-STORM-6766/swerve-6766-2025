@@ -102,7 +102,7 @@ public class Elevator extends SubsystemBase {
 
     public Command toIn() {
         return new FunctionalCommand(
-                () -> setPosition(0.59),
+                () -> setPosition(0.92), // 1.2  0.59
                 () -> {
                 },
                 interrupted -> {
